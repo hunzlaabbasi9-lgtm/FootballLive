@@ -37,4 +37,6 @@ export async function initDb() {
   `);
   // Case-insensitive uniqueness on email.
   await query(`CREATE UNIQUE INDEX IF NOT EXISTS users_email_lower_idx ON users (LOWER(email));`);
+  // Single-session enforcement: tracks the one active session per user.
+  await query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS session_token UUID;`);
 }

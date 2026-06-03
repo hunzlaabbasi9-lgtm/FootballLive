@@ -12,6 +12,7 @@ function rowToUser(row) {
     passwordHash: row.password_hash,
     hasPaid: row.has_paid,
     stripeSessionId: row.stripe_session_id,
+    sessionToken: row.session_token,
     createdAt: row.created_at,
   };
 }
@@ -32,6 +33,14 @@ export async function createUser({ email, name, passwordHash }) {
      VALUES ($1, $2, $3)
      RETURNING *`,
     [email, name, passwordHash]
+  );
+  return rowToUser(rows[0]);
+}
+
+export async function setSessionToken(id, sessionToken) {
+  const { rows } = await query(
+    "UPDATE users SET session_token = $1 WHERE id = $2 RETURNING *",
+    [sessionToken, id]
   );
   return rowToUser(rows[0]);
 }
@@ -65,6 +74,6 @@ export async function updateUser(id, patch) {
 // Strip sensitive fields before returning to the client.
 export function publicUser(u) {
   if (!u) return null;
-  const { passwordHash, ...safe } = u;
+  const { passwordHash, sessionToken, ...safe } = u;
   return safe;
 }

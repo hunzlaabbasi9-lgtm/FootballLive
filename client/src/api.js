@@ -25,4 +25,17 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// When the server reports another device took over, force a clean logout.
+api.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    if (err.response?.data?.code === "SESSION_REPLACED") {
+      localStorage.removeItem("wc_token");
+      sessionStorage.setItem("wc_kicked", "1");
+      window.location.href = "/login";
+    }
+    return Promise.reject(err);
+  }
+);
+
 export default api;

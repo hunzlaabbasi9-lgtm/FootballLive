@@ -38,7 +38,8 @@ export function AuthProvider({ children }) {
     return data.user;
   }, [persist]);
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    try { await api.post("/auth/logout"); } catch {}
     localStorage.removeItem("wc_token");
     setUser(null);
   }, []);

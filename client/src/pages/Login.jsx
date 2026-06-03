@@ -10,12 +10,14 @@ export default function Login() {
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const kicked = sessionStorage.getItem("wc_kicked") === "1";
 
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
 
   const submit = async (e) => {
     e.preventDefault();
     setError("");
+    sessionStorage.removeItem("wc_kicked");
     setLoading(true);
     try {
       const user = await login(form.email, form.password);
@@ -45,6 +47,11 @@ export default function Login() {
 
         {/* Form */}
         <form className="p-md space-y-md" onSubmit={submit}>
+          {kicked && (
+            <div className="px-4 py-3 rounded-lg bg-amber-900/30 border border-amber-500/40 text-amber-300 text-sm">
+              Your session was ended because someone logged in on another device.
+            </div>
+          )}
           {error && (
             <div className="px-4 py-3 rounded-lg bg-error-container/20 border border-error/30 text-error text-sm">{error}</div>
           )}

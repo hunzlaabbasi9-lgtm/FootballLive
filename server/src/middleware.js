@@ -4,7 +4,7 @@ import { findUserById, publicUser } from "./store.js";
 const JWT_SECRET = process.env.JWT_SECRET || "dev_insecure_secret";
 
 export function signToken(user) {
-  return jwt.sign({ uid: user.id }, JWT_SECRET, { expiresIn: "7d" });
+  return jwt.sign({ uid: user.id, sid: user.sessionToken }, JWT_SECRET, { expiresIn: "7d" });
 }
 
 // Verifies the Bearer token and attaches req.user (the full record).
@@ -16,9 +16,13 @@ export async function requireAuth(req, res, next) {
   const token = header.startsWith("Bearer ") ? header.slice(7) : req.query.token || null;
   if (!token) return res.status(401).json({ error: "Not authenticated" });
   try {
-    const { uid } = jwt.verify(token, JWT_SECRET);
+    const { uid, sid } = jwt.verify(token, JWT_SECRET);
     const user = await findUserById(uid);
     if (!user) return res.status(401).json({ error: "User no longer exists" });
+    // Single-session enforcement: reject if another device has since logged in.
+    if (sid !== user.sessionToken) {
+      return res.status(401).json({ error: "Logged in on another device", code: "SESSION_REPLACED" });
+    }
     req.user = user;
     next();
   } catch {
