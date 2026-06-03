@@ -1,0 +1,29 @@
+# ── Dependencies ──────────────────────────────
+node_modules/
+*/node_modules/
+
+# ── Secrets / env (NEVER commit) ──────────────
+.env
+*/.env
+.env.*
+!*/.env.example
+server/.env
+
+# ── Local data (user store, bcrypt hashes) ────
+data/
+server/data/
+
+# ── Stitch fetch helper (contains API key) ────
+fetch-stitch.mjs
+
+# ── Build output ──────────────────────────────
+dist/
+*/dist/
+build/
+
+# ── Logs / misc ───────────────────────────────
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+.vite/

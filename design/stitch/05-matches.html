@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>WorldCup Live - Matches Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&amp;family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-fixed": "#ffe08f",
+                    "surface-container-lowest": "#0a0d1e",
+                    "surface-tint": "#eec13c",
+                    "on-primary-fixed-variant": "#584400",
+                    "tertiary-container": "#ffbdbb",
+                    "secondary-fixed-dim": "#62de8e",
+                    "on-surface": "#dfe1fa",
+                    "surface-container-highest": "#303447",
+                    "secondary-fixed": "#7ffba8",
+                    "tertiary-fixed": "#ffdad8",
+                    "on-secondary-fixed-variant": "#005229",
+                    "error-container": "#93000a",
+                    "inverse-surface": "#dfe1fa",
+                    "surface-dim": "#0f1224",
+                    "surface-container-high": "#26293b",
+                    "secondary": "#15a35a",
+                    "background": "#0f1224",
+                    "error": "#ffb4ab",
+                    "on-secondary-container": "#ffffff",
+                    "surface": "#0f1224",
+                    "outline-variant": "#4e4634",
+                    "on-secondary": "#ffffff",
+                    "on-tertiary-container": "#b10025",
+                    "on-error": "#690005",
+                    "on-tertiary-fixed": "#410007",
+                    "on-tertiary": "#680011",
+                    "primary-fixed-dim": "#eec13c",
+                    "on-primary-container": "#6c5400",
+                    "tertiary": "#ffe3e2",
+                    "on-error-container": "#ffdad6",
+                    "surface-bright": "#35384b",
+                    "tertiary-fixed-dim": "#ffb3b1",
+                    "on-primary": "#3d2e00",
+                    "on-background": "#dfe1fa",
+                    "secondary-container": "#15a35a",
+                    "surface-container": "#1b1f30",
+                    "primary": "#ffe7af",
+                    "surface-variant": "#303447",
+                    "on-surface-variant": "#d1c5ae",
+                    "on-secondary-fixed": "#00210d",
+                    "on-tertiary-fixed-variant": "#92001d",
+                    "outline": "#9a907b",
+                    "inverse-on-surface": "#2c2f42",
+                    "on-primary-fixed": "#241a00",
+                    "inverse-primary": "#755b00",
+                    "primary-container": "#f5c842",
+                    "surface-container-low": "#171a2c"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "sm": "12px",
+                    "margin-edge": "32px",
+                    "xl": "80px",
+                    "base": "8px",
+                    "md": "24px",
+                    "xs": "4px",
+                    "lg": "48px",
+                    "gutter": "24px"
+            },
+            "fontFamily": {
+                    "title-md": ["Inter"],
+                    "label-caps": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "headline-lg": ["Bebas Neue"],
+                    "headline-lg-mobile": ["Bebas Neue"],
+                    "display-lg": ["Bebas Neue"],
+                    "display-sm": ["Bebas Neue"],
+                    "body-sm": ["Inter"]
+            },
+            "fontSize": {
+                    "title-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.1em", "fontWeight": "700"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "36px", "letterSpacing": "0.03em", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "32px", "fontWeight": "400"}],
+                    "display-lg": ["80px", {"lineHeight": "80px", "letterSpacing": "0.02em", "fontWeight": "400"}],
+                    "display-sm": ["56px", {"lineHeight": "56px", "letterSpacing": "0.02em", "fontWeight": "400"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .glass-card {
+            background: rgba(27, 31, 48, 0.4);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+        .live-pulse {
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            animation: pulse 1.5s infinite cubic-bezier(0.66, 0, 0, 1);
+        }
+        @keyframes pulse {
+            to { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+        }
+        .gold-glow {
+            filter: drop-shadow(0 0 20px rgba(245, 200, 66, 0.4));
+        }
+        .emerald-glow {
+            box-shadow: 0 0 25px rgba(21, 163, 90, 0.4);
+        }
+        .broadcast-toggle {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .broadcast-toggle.active {
+            background: #f5c842;
+            border-color: #f5c842;
+            color: #241a00;
+            box-shadow: 0 0 15px rgba(245, 200, 66, 0.3);
+        }
+        body {
+            background-color: #06091a;
+            color: #dfe1fa;
+            background-image: radial-gradient(circle at 50% 0%, rgba(245, 200, 66, 0.05) 0%, transparent 50%);
+        }
+        .team-shield {
+            background: linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+    </style>
+</head>
+<body class="font-body-sm selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface/80 backdrop-blur-xl border-b border-white/5">
+<div class="flex justify-between items-center px-margin-edge h-20 max-w-[1440px] mx-auto">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-primary" data-icon="menu">menu</span>
+<span class="font-headline-lg-mobile text-headline-lg-mobile text-primary tracking-widest flex items-center gap-2">
+<span class="material-symbols-outlined fill-1" data-icon="sports_soccer">sports_soccer</span>
+                    WORLDCUP LIVE
+                </span>
+</div>
+<button class="font-label-caps text-label-caps bg-primary text-on-primary px-md py-xs rounded-full hover:brightness-110 transition-all duration-300 active:scale-95 shadow-lg shadow-primary/20">LOGIN</button>
+</div>
+</header>
+<main class="pt-32 pb-40 px-margin-edge max-w-[1440px] mx-auto">
+<!-- Command Center Header -->
+<section class="mb-lg">
+<div class="flex flex-col gap-sm">
+<span class="font-label-caps text-primary tracking-widest opacity-80">MATCH CENTER</span>
+<h1 class="font-display-sm text-display-sm text-on-surface uppercase leading-none">Live Global Stage</h1>
+</div>
+<div class="flex items-center gap-sm overflow-x-auto no-scrollbar py-md">
+<button class="broadcast-toggle active px-lg py-sm rounded-full font-label-caps text-label-caps whitespace-nowrap">All Matches</button>
+<button class="broadcast-toggle px-lg py-sm rounded-full font-label-caps text-on-surface-variant whitespace-nowrap">Live Events</button>
+<button class="broadcast-toggle px-lg py-sm rounded-full font-label-caps text-on-surface-variant whitespace-nowrap">Upcoming</button>
+<button class="broadcast-toggle px-lg py-sm rounded-full font-label-caps text-on-surface-variant whitespace-nowrap">Finished</button>
+</div>
+</section>
+<!-- Match Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-md">
+<!-- Card 1: LIVE Match -->
+<div class="glass-card rounded-2xl p-md flex flex-col gap-md relative overflow-hidden group hover:border-white/20 transition-all duration-500">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-xs">
+<img alt="Brazil Flag" class="w-6 h-4 object-cover rounded-xs" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCk9iFqFNNg282eR3shp4tPR3HwKpVIkrhkdbj7D8f3Q9lbLt3xJqENdbwLCrQ9r4D-jK1xhd6x1Etl6BmLNGrzD-TBQRIcKu8QVWmkygq43SxIqnI-KAhjK89bQIwrcwj4MWDAIPFVAHN49m6P0dKA9rDy8qZcKmXtvxXHZjWiSDOXMkeyGrS8E74zB38kArZfBhABls5Z6i5GpwuhENDFQRjz6mIiLlYsLJrA0EHsnnqCKXlb3V0jWN8cR6FqRGqOU4w59vgEuvZX"/>
+<span class="font-label-caps text-[10px] text-on-surface-variant opacity-80 uppercase tracking-tighter">GROUP G • STADIUM 974</span>
+</div>
+<div class="flex items-center gap-xs bg-error-container/20 text-error px-sm py-1 rounded-full text-[10px] font-bold live-pulse border border-error/30">
+<span class="material-symbols-outlined text-[10px] fill-1" data-icon="circle">circle</span>
+                        LIVE
+                    </div>
+</div>
+<div class="flex justify-between items-center py-md">
+<div class="flex flex-col items-center gap-sm w-1/3">
+<div class="w-20 h-20 rounded-2xl team-shield flex items-center justify-center p-md shadow-2xl group-hover:scale-105 transition-transform">
+<img alt="Brazil" class="w-full h-full object-contain filter drop-shadow-lg" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAt9u0rzp75tPc0bIYLqh6cLtdP48xQmW8rpHEL32lOXC9kaTUPT4iimAzqr3EAFMqK-hmsJtZH-Jrmq2wim3ubMUo0sWr4rMNNdA8yu0N-0ocbe88ZvZOHIb479WwuL2Y8TlzQLf9IrJbJO9qFNPVZ-3vp7GUoN6dYHEtzYoxW5ocMLVXR1at2RHsJPGXodjc2aKr2hv3pCV7LwqZfX5XyDhYyyMJj8aPfC40rkAUQ-XPykc0SZxU0JIPozSF0Sh2pntPI1gWI-xa7"/>
+</div>
+<span class="font-label-caps text-on-surface text-center tracking-widest">BRAZIL</span>
+</div>
+<div class="flex flex-col items-center">
+<div class="flex items-center gap-sm font-display-sm text-display-sm text-primary gold-glow leading-none">
+<span>2</span>
+<span class="text-on-surface-variant opacity-20 text-headline-lg-mobile">:</span>
+<span>1</span>
+</div>
+<span class="font-label-caps text-secondary-fixed text-[12px] mt-xs">74' <span class="animate-pulse">MIN</span></span>
+</div>
+<div class="flex flex-col items-center gap-sm w-1/3">
+<div class="w-20 h-20 rounded-2xl team-shield flex items-center justify-center p-md shadow-2xl group-hover:scale-105 transition-transform">
+<img alt="Serbia" class="w-full h-full object-contain filter drop-shadow-lg" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCLHiusfz-YXMxNlFc4p34QWWP0gdfz0fqCgRANqxrC4VbU56g1mAh-ke8TERHqM05IsfnPJJdFg471kZtzljI53iqRR1fGoOJD5v58KLeS-ABP2bv8tlQx-Wl2EgSMkr49e4TSfKNfVWnfBj4Y77yyapf59VzHRbDOsCYI56LgMLnAZIgsEc7h-Wt8h6NDQuKxiD05aqoj03H00iIXdxQLoe1dU7YTVUTvT5-aRiNOIky2KiODAp55x79ZQZ5dc-Iwiqccy2-wc4i4"/>
+</div>
+<span class="font-label-caps text-on-surface text-center tracking-widest">SERBIA</span>
+</div>
+</div>
+<div class="flex justify-between items-center mt-auto pt-md border-t border-white/5">
+<div class="flex items-center gap-xs text-on-surface-variant font-label-caps text-[10px]">
+<span class="material-symbols-outlined text-sm text-secondary" data-icon="sensors">sensors</span>
+<span>4 BROADCASTS</span>
+</div>
+<button class="bg-secondary text-on-secondary px-lg py-sm rounded-full font-label-caps text-label-caps flex items-center gap-xs hover:brightness-110 active:scale-95 transition-all emerald-glow">
+<span class="material-symbols-outlined fill-1" data-icon="play_arrow">play_arrow</span>
+                        WATCH
+                    </button>
+</div>
+</div>
+<!-- Card 2: UPCOMING Match -->
+<div class="glass-card rounded-2xl p-md flex flex-col gap-md relative overflow-hidden group hover:border-white/20 transition-all duration-500">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-xs">
+<img alt="France Flag" class="w-6 h-4 object-cover rounded-xs" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAT2iyjEdWOoP16CFhzTYYtG-QOWjdF_vYqRB45I7Bp9zYxBOTM94oWQO0qYhTGwRsjNveAM0ob84OGjnqS9NAlVGsJdOHaTecQMnEDICC-8AaGxgsncbzSVP4aXHYHZQ-nLWqZAMcQeIkz6tDGiF-7Laqoox_JBB72sP9mu0cLr1RQXZiX3foDMFcSUGUOhfHqI3XIHbY77zdONRZCZyGAUFUzVvCqyodaEThBVZkrTQw-5LsX6vSuaM-Swoc2pTz-KV3ImyhFXtqA"/>
+<span class="font-label-caps text-[10px] text-on-surface-variant opacity-80 uppercase tracking-tighter">GROUP D • AL JANOUB</span>
+</div>
+<div class="bg-surface-container-highest/50 text-on-surface-variant px-sm py-1 rounded-full text-[10px] font-bold border border-white/10 uppercase">
+                        Upcoming
+                    </div>
+</div>
+<div class="flex justify-between items-center py-md">
+<div class="flex flex-col items-center gap-sm w-1/3">
+<div class="w-20 h-20 rounded-2xl team-shield flex items-center justify-center p-md opacity-60 group-hover:opacity-100 transition-all">
+<img alt="France" class="w-full h-full object-contain grayscale group-hover:grayscale-0 transition-all" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCQm9lmghoR2K4Xp-ZMKyE4BxQWrGLbE50kSXbOfvujVsO14FDTrOwT5YQKlH_OOPnFzU_QfEk8TcteR1ughJyEm57rAJPFaoD_cJjSy1At1DXzgCDadkB9BP2iXKcuCE5nFWshWKVHaIxvMynLigp845sX9UAzIekfMjwbjQev5IIW9LpI2VJMRolN81m3zgQgwQ7NQu-lJa_jllSiOV5Jze05MGDVyrtjh0daE0iS_AP9Yz3jcdc18_awcl64uoHqgXChWpU7Hn_"/>
+</div>
+<span class="font-label-caps text-on-surface opacity-60 text-center tracking-widest">FRANCE</span>
+</div>
+<div class="flex flex-col items-center">
+<span class="font-display-sm text-display-sm text-on-surface-variant opacity-10 leading-none">VS</span>
+<span class="font-label-caps text-primary text-[14px] mt-xs">20:45</span>
+</div>
+<div class="flex flex-col items-center gap-sm w-1/3">
+<div class="w-20 h-20 rounded-2xl team-shield flex items-center justify-center p-md opacity-60 group-hover:opacity-100 transition-all">
+<img alt="Denmark" class="w-full h-full object-contain grayscale group-hover:grayscale-0 transition-all" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnlNWED7xazkiY1fj5LQFS-yoZl2-7IullbrSI0Nv1I6-5KxGFZAb149g4GpOhpK5bW5s01KcPyGmHTkt3IRUa78YH-OXkNmn6x0-cRyUthA4fwSZ3K5ueQ5AmU06rLn4MzCTWYuylZu4en66Lo4YqbZJI4B-Hdqazh-vOBY38vEc3KcuuBx0_jXqAc60af5HQnnhTMrk5QZpES9CO4JKOZUHNnS4Jf8IDbH8ximPpjfcsqbQoJhGw9RWQe5NMhR9TVQvzuh8sexLo"/>
+</div>
+<span class="font-label-caps text-on-surface opacity-60 text-center tracking-widest">DENMARK</span>
+</div>
+</div>
+<div class="flex justify-between items-center mt-auto pt-md border-t border-white/5">
+<button class="flex items-center gap-xs text-on-surface-variant font-label-caps text-[10px] hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="notifications">notifications</span>
+<span>REMIND ME</span>
+</button>
+<button class="bg-surface-container-highest/40 text-on-surface px-lg py-sm rounded-full font-label-caps text-label-caps hover:bg-white/10 active:scale-95 transition-all border border-white/10">
+                        DETAILS
+                    </button>
+</div>
+</div>
+<!-- Card 3: LIVE Match 2 -->
+<div class="glass-card rounded-2xl p-md flex flex-col gap-md relative overflow-hidden group hover:border-white/20 transition-all duration-500">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-xs">
+<img alt="Argentina Flag" class="w-6 h-4 object-cover rounded-xs" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC9YCtSm2bk38zUqg8f3hXH-T48IdXeFSPBRQwxvRwKuY_rxlskseiCfsUevFQxW3T5NhNOuMNtTAR0za9O7lq_9hS1bL_uy_-P_gsr9sGRf5MCJF2gl4fKp10ScDOcv9JqrsTfCqIF_jbW9jYT3aZQ0UWSLLshUFTHgQrh7MDqBHmSx_XfUftsZYyGwWxBroc9kPudhIvgxWfKvi8NP_qK1E13mCtLkIFXwWuqKD_58ra5BwNy4XeEjcxSvT0qSN3-g_Xd9hP8JMJP"/>
+<span class="font-label-caps text-[10px] text-on-surface-variant opacity-80 uppercase tracking-tighter">GROUP C • LUSAIL STADIUM</span>
+</div>
+<div class="flex items-center gap-xs bg-error-container/20 text-error px-sm py-1 rounded-full text-[10px] font-bold live-pulse border border-error/30">
+<span class="material-symbols-outlined text-[10px] fill-1" data-icon="circle">circle</span>
+                        LIVE
+                    </div>
+</div>
+<div class="flex justify-between items-center py-md">
+<div class="flex flex-col items-center gap-sm w-1/3">
+<div class="w-20 h-20 rounded-2xl team-shield flex items-center justify-center p-md shadow-2xl group-hover:scale-105 transition-transform">
+<img alt="Argentina" class="w-full h-full object-contain filter drop-shadow-lg" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZAr40Wq_Qv_uVUy5xraFVj2AxL66mki18Corr2MDvY1oPUheqdE6HHcugeEPd57fvi6pf0nE6fBD5BahGy3oGQdW0xOBqUf7xgyhFmdkeGG_GgVPgrAaSgcVBNf5N7hhqFVsm-1s95TX3DGTN6XTeExwcSwdgpQSC7bWMhC1Rho3pod5r02P4Aaq3r0JJaMFkoxux0Gh1lYXAaleVqmcs_a-bdrtP7YfNJcxNuyikZO9skPPu9a_nMI6PlnHnhqqfiDIygmOwL9sC"/>
+</div>
+<span class="font-label-caps text-on-surface text-center tracking-widest">ARGENTINA</span>
+</div>
+<div class="flex flex-col items-center">
+<div class="flex items-center gap-sm font-display-sm text-display-sm text-primary gold-glow leading-none">
+<span>0</span>
+<span class="text-on-surface-variant opacity-20 text-headline-lg-mobile">:</span>
+<span>0</span>
+</div>
+<span class="font-label-caps text-secondary-fixed text-[12px] mt-xs">12' <span class="animate-pulse">MIN</span></span>
+</div>
+<div class="flex flex-col items-center gap-sm w-1/3">
+<div class="w-20 h-20 rounded-2xl team-shield flex items-center justify-center p-md shadow-2xl group-hover:scale-105 transition-transform">
+<img alt="Mexico" class="w-full h-full object-contain filter drop-shadow-lg" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCV1q6v2IetH8KHt48n2cnmfRCd5uSZAiPvAotUgBtJgGJvmyvGq84g8UAUGeuC0Vx46V7oOms65sJxU0V1pOh_AQVIZYvH1SS8pNpBHZ8pB-Y44Lv8uCGstSnSTQAY-PZyJebtmSyuPh_rxN-T97XDaXRCU5YYzlm7wVscQd52aDrRi-VuDbpAq0Sf9ekouAFmGp31tgkjveqY3mB1UhKKu7TjI6c6ZKMCgxxlfS4GOYrNHm6Gu4ymqsQMNnd9WXXanGd3f19DhTl9"/>
+</div>
+<span class="font-label-caps text-on-surface text-center tracking-widest">MEXICO</span>
+</div>
+</div>
+<div class="flex justify-between items-center mt-auto pt-md border-t border-white/5">
+<div class="flex items-center gap-xs text-on-surface-variant font-label-caps text-[10px]">
+<span class="material-symbols-outlined text-sm text-secondary" data-icon="sensors">sensors</span>
+<span>12 BROADCASTS</span>
+</div>
+<button class="bg-secondary text-on-secondary px-lg py-sm rounded-full font-label-caps text-label-caps flex items-center gap-xs hover:brightness-110 active:scale-95 transition-all emerald-glow">
+<span class="material-symbols-outlined fill-1" data-icon="play_arrow">play_arrow</span>
+                        WATCH
+                    </button>
+</div>
+</div>
+</div>
+<!-- Pagination -->
+<div class="mt-xl flex justify-center items-center gap-md">
+<button class="w-12 h-12 flex items-center justify-center rounded-full glass-card text-on-surface-variant hover:text-primary transition-colors border border-white/10">
+<span class="material-symbols-outlined" data-icon="chevron_left">chevron_left</span>
+</button>
+<div class="flex gap-sm">
+<button class="w-12 h-12 flex items-center justify-center rounded-full bg-primary text-on-primary font-bold font-label-caps shadow-lg shadow-primary/20">1</button>
+<button class="w-12 h-12 flex items-center justify-center rounded-full glass-card text-on-surface font-label-caps border border-white/10">2</button>
+<button class="w-12 h-12 flex items-center justify-center rounded-full glass-card text-on-surface font-label-caps border border-white/10">3</button>
+</div>
+<button class="w-12 h-12 flex items-center justify-center rounded-full glass-card text-on-surface-variant hover:text-primary transition-colors border border-white/10">
+<span class="material-symbols-outlined" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full mt-auto bg-surface-container-lowest border-t border-white/5 bg-gradient-to-b from-surface-container-lowest to-black">
+<div class="flex flex-col md:flex-row justify-between items-center py-lg px-margin-edge gap-md max-w-[1440px] mx-auto">
+<div class="flex flex-col items-center md:items-start gap-xs">
+<span class="font-headline-lg text-headline-lg text-primary flex items-center gap-2">
+<span class="material-symbols-outlined fill-1" data-icon="sports_soccer">sports_soccer</span>
+                    WORLDCUP LIVE
+                </span>
+<span class="font-body-sm text-body-sm text-on-surface-variant opacity-60 uppercase tracking-tighter">© 2024 WORLD CUP LIVE. THE COMMAND CENTER FOR GLOBAL FOOTBALL.</span>
+</div>
+<div class="flex flex-wrap justify-center gap-md">
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors" href="#">Broadcast Info</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors" href="#">Rights &amp; Policy</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors" href="#">Support</a>
+</div>
+</div>
+</footer>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center py-sm px-md pb-safe md:hidden bg-surface-container/90 backdrop-blur-xl border-t border-white/10 shadow-[0_-10px_40px_rgba(0,0,0,0.8)] z-50">
+<a class="flex flex-col items-center justify-center text-primary font-bold group" href="#">
+<span class="material-symbols-outlined fill-1 scale-110" data-icon="sports_soccer">sports_soccer</span>
+<span class="font-label-caps text-[10px] mt-1">Matches</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-60 hover:opacity-100 transition-opacity" href="#">
+<span class="material-symbols-outlined" data-icon="live_tv">live_tv</span>
+<span class="font-label-caps text-[10px] mt-1">Live</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-60 hover:opacity-100 transition-opacity" href="#">
+<span class="material-symbols-outlined" data-icon="leaderboard">leaderboard</span>
+<span class="font-label-caps text-[10px] mt-1">Table</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-60 hover:opacity-100 transition-opacity" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-caps text-[10px] mt-1">Profile</span>
+</a>
+</nav>
+<script>
+        const tabs = document.querySelectorAll('.broadcast-toggle');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => {
+                    t.classList.remove('active');
+                    t.classList.add('text-on-surface-variant');
+                });
+                tab.classList.add('active');
+                tab.classList.remove('text-on-surface-variant');
+            });
+        });
+    </script>
+</body></html>

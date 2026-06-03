@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Unlock Live Streaming | WORLDCUP LIVE</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&amp;family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-fixed": "#ffe08f",
+                    "surface-container-lowest": "#0a0d1e",
+                    "surface-tint": "#eec13c",
+                    "on-primary-fixed-variant": "#584400",
+                    "tertiary-container": "#ffbdbb",
+                    "secondary-fixed-dim": "#62de8e",
+                    "on-surface": "#dfe1fa",
+                    "surface-container-highest": "#303447",
+                    "secondary-fixed": "#7ffba8",
+                    "tertiary-fixed": "#ffdad8",
+                    "on-secondary-fixed-variant": "#005229",
+                    "error-container": "#93000a",
+                    "inverse-surface": "#dfe1fa",
+                    "surface-dim": "#0f1224",
+                    "surface-container-high": "#26293b",
+                    "secondary": "#62de8e",
+                    "background": "#0f1224",
+                    "error": "#ffb4ab",
+                    "on-secondary-container": "#003116",
+                    "surface": "#0f1224",
+                    "outline-variant": "#4e4634",
+                    "on-secondary": "#00391b",
+                    "on-tertiary-container": "#b10025",
+                    "on-error": "#690005",
+                    "on-tertiary-fixed": "#410007",
+                    "on-tertiary": "#680011",
+                    "primary-fixed-dim": "#eec13c",
+                    "on-primary-container": "#6c5400",
+                    "tertiary": "#ffe3e2",
+                    "on-error-container": "#ffdad6",
+                    "surface-bright": "#35384b",
+                    "tertiary-fixed-dim": "#ffb3b1",
+                    "on-primary": "#3d2e00",
+                    "on-background": "#dfe1fa",
+                    "secondary-container": "#1ba65c",
+                    "surface-container": "#1b1f30",
+                    "primary": "#ffe7af",
+                    "surface-variant": "#303447",
+                    "on-surface-variant": "#d1c5ae",
+                    "on-secondary-fixed": "#00210d",
+                    "on-tertiary-fixed-variant": "#92001d",
+                    "outline": "#9a907b",
+                    "inverse-on-surface": "#2c2f42",
+                    "on-primary-fixed": "#241a00",
+                    "inverse-primary": "#755b00",
+                    "primary-container": "#f5c842",
+                    "surface-container-low": "#171a2c"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "sm": "12px",
+                    "margin-edge": "32px",
+                    "xl": "80px",
+                    "base": "8px",
+                    "md": "24px",
+                    "xs": "4px",
+                    "lg": "48px",
+                    "gutter": "24px"
+            },
+            "fontFamily": {
+                    "title-md": ["Inter"],
+                    "label-caps": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "headline-lg": ["Bebas Neue"],
+                    "headline-lg-mobile": ["Bebas Neue"],
+                    "display-lg": ["Bebas Neue"],
+                    "display-sm": ["Bebas Neue"],
+                    "body-sm": ["Inter"]
+            },
+            "fontSize": {
+                    "title-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.1em", "fontWeight": "700"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "36px", "letterSpacing": "0.03em", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "32px", "fontWeight": "400"}],
+                    "display-lg": ["80px", {"lineHeight": "80px", "letterSpacing": "0.02em", "fontWeight": "400"}],
+                    "display-sm": ["48px", {"lineHeight": "48px", "letterSpacing": "0.02em", "fontWeight": "400"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .glass-card {
+            background: linear-gradient(135deg, rgba(27, 31, 48, 0.8) 0%, rgba(15, 18, 36, 0.95) 100%);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(238, 193, 60, 0.15);
+        }
+        .premium-glow {
+            box-shadow: 0 0 60px -15px rgba(238, 193, 60, 0.25);
+        }
+        .gold-gradient-text {
+            background: linear-gradient(180deg, #ffe7af 0%, #eec13c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 10px rgba(238, 193, 60, 0.3));
+        }
+        .cinematic-button {
+            background: linear-gradient(90deg, #f5c842 0%, #eec13c 50%, #f5c842 100%);
+            background-size: 200% auto;
+            transition: 0.5s;
+            box-shadow: 0 10px 30px -10px rgba(238, 193, 60, 0.5);
+        }
+        .cinematic-button:hover {
+            background-position: right center;
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px -10px rgba(238, 193, 60, 0.6);
+        }
+        .check-icon {
+            filter: drop-shadow(0 0 5px rgba(98, 222, 142, 0.4));
+        }
+        @keyframes shine {
+            0% { transform: translateX(-100%) skewX(-15deg); }
+            100% { transform: translateX(200%) skewX(-15deg); }
+        }
+        .button-shine {
+            position: relative;
+            overflow: hidden;
+        }
+        .button-shine::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 30%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.3);
+            animation: shine 3s infinite;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-lg min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/70 backdrop-blur-xl border-b border-white/10 h-20">
+<div class="flex justify-between items-center px-margin-edge h-full max-w-[1440px] mx-auto">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary" data-icon="menu">menu</span>
+<span class="font-headline-lg-mobile text-headline-lg-mobile text-primary tracking-widest">⚽ WORLDCUP LIVE</span>
+</div>
+<button class="font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface transition-colors active:scale-95 px-md py-xs rounded-lg hover:bg-primary/10">LOGIN</button>
+</div>
+</header>
+<!-- Main Content: Pricing Canvas -->
+<main class="flex-grow flex items-center justify-center px-margin-edge pt-32 pb-40 relative overflow-hidden">
+<!-- Atmospheric Background Element -->
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary-container/10 rounded-full blur-[160px] pointer-events-none"></div>
+<div class="w-full max-w-md glass-card rounded-2xl p-lg premium-glow relative overflow-hidden transition-all duration-500">
+<!-- Exclusive Badge -->
+<div class="absolute top-0 right-0 p-md">
+<span class="bg-primary/10 text-primary border border-primary/20 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-tighter">Gold Pass</span>
+</div>
+<!-- Decorative Icon -->
+<div class="flex justify-center mb-md">
+<div class="relative">
+<div class="absolute inset-0 bg-primary-container/30 blur-2xl rounded-full"></div>
+<div class="relative bg-surface-container-high w-24 h-24 rounded-full flex items-center justify-center border border-primary-container/40">
+<span class="material-symbols-outlined text-[48px] gold-gradient-text" data-icon="stars" style="font-variation-settings: 'FILL' 1;">stars</span>
+</div>
+</div>
+</div>
+<!-- Title & Price -->
+<div class="text-center mb-lg">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-xs tracking-tight uppercase">Unlock Stadium Access</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-md opacity-70">Experience every moment of glory in real-time.</p>
+<div class="flex flex-col items-center">
+<span class="font-display-sm text-[64px] gold-gradient-text leading-tight">$5 USD</span>
+<span class="font-label-caps text-label-caps text-primary/80 tracking-[0.2em] mt-2">VIP ONE-TIME ACCESS</span>
+</div>
+</div>
+<!-- Features Checklist -->
+<div class="space-y-md mb-xl">
+<div class="flex items-center gap-sm group">
+<div class="bg-secondary/10 p-1.5 rounded-lg border border-secondary/20">
+<span class="material-symbols-outlined text-secondary text-[22px] check-icon" data-icon="verified" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface leading-tight">Every World Cup match in <span class="text-primary font-bold">Ultra HD 4K</span></p>
+</div>
+<div class="flex items-center gap-sm group">
+<div class="bg-secondary/10 p-1.5 rounded-lg border border-secondary/20">
+<span class="material-symbols-outlined text-secondary text-[22px] check-icon" data-icon="verified" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface leading-tight">Global Redundant CDN (Zero Buffering)</p>
+</div>
+<div class="flex items-center gap-sm group">
+<div class="bg-secondary/10 p-1.5 rounded-lg border border-secondary/20">
+<span class="material-symbols-outlined text-secondary text-[22px] check-icon" data-icon="verified" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface leading-tight">Elite Match Stats &amp; Live Commentary</p>
+</div>
+<div class="flex items-center gap-sm group">
+<div class="bg-secondary/10 p-1.5 rounded-lg border border-secondary/20">
+<span class="material-symbols-outlined text-secondary text-[22px] check-icon" data-icon="verified" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface leading-tight">Multi-Device Cinematic Streaming</p>
+</div>
+</div>
+<!-- CTA -->
+<button class="w-full cinematic-button button-shine text-on-primary h-16 rounded-xl font-title-md text-title-md flex items-center justify-center gap-xs uppercase tracking-widest active:scale-[0.98] transition-all duration-300">
+                Pay $5 &amp; Watch Now
+                <span class="material-symbols-outlined" data-icon="bolt" style="font-variation-settings: 'FILL' 1;">bolt</span>
+</button>
+<!-- Trust Section -->
+<div class="mt-lg pt-lg border-t border-white/5">
+<div class="flex flex-col items-center gap-sm">
+<div class="flex items-center gap-md opacity-40 grayscale transition-all hover:grayscale-0 hover:opacity-100">
+<img alt="Stripe" class="h-5" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDz12XBYt3ODWtOg8i9_qQsCHryksIkxBE8zMLAbbdB5D-cYlm2vb3NOUyAu6kDnIY_TXudMmO7vXavgY2QSM0Cn6AXXIaFhAM2uYxHAsE0ps65kdMIEivRFH_55SMLv6By1y1ST_cnp1qe550mP_bC_7cXd24nTEru24s9ps4cO8itmSJhQJU-cEZk39BlOa9y__iAsCYWulYCv-uzzbTL-9uLK466VP7dg58tXNWz0kbUdLeoGhmj4ZxW3WVHM46KJnietElXC48e"/>
+<div class="w-px h-4 bg-white/20"></div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="shield_with_heart" style="font-variation-settings: 'FILL' 1;">shield_with_heart</span>
+<span class="font-label-caps text-[9px] tracking-widest uppercase">SSL SECURE</span>
+</div>
+</div>
+<p class="font-label-caps text-[10px] tracking-widest text-on-surface-variant opacity-50 uppercase">256-bit encryption • Instant Activation</p>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full mt-auto bg-surface-container-lowest border-t border-white/5 bg-gradient-to-b from-surface-container-lowest to-black">
+<div class="flex flex-col md:flex-row justify-between items-center py-lg px-margin-edge gap-md max-w-[1440px] mx-auto text-center md:text-left">
+<div class="flex flex-col gap-xs">
+<span class="font-headline-lg text-headline-lg text-primary">⚽ WORLDCUP LIVE</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant max-w-xs">© 2024 WORLDCUP LIVE. THE GOLD STANDARD OF FOOTBALL.</p>
+</div>
+<nav class="flex flex-wrap justify-center gap-md">
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-200" href="#">Privacy Policy</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-200" href="#">Terms of Service</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-200" href="#">Cookie Settings</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-200" href="#">Contact Us</a>
+</nav>
+</div>
+</footer>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center py-sm px-md pb-safe bg-surface-container/80 backdrop-blur-md border-t border-white/10 shadow-[0_-10px_20px_rgba(0,0,0,0.5)] z-50 rounded-t-xl md:hidden">
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-70 hover:opacity-100 transition-opacity active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="sports_soccer">sports_soccer</span>
+<span class="font-label-caps text-label-caps">Matches</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary font-bold active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="live_tv" style="font-variation-settings: 'FILL' 1;">live_tv</span>
+<span class="font-label-caps text-label-caps">Live</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-70 hover:opacity-100 transition-opacity active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="leaderboard">leaderboard</span>
+<span class="font-label-caps text-label-caps">Standings</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-70 hover:opacity-100 transition-opacity active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-caps text-label-caps">Profile</span>
+</a>
+</nav>
+</body></html>
