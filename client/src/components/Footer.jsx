@@ -5,7 +5,7 @@ export default function Footer() {
         <div className="flex flex-col items-center md:items-start gap-xs">
           <span className="bebas-headline text-2xl text-primary tracking-widest">⚽ WORLDCUP LIVE</span>
           <p className="font-body-sm text-[11px] text-on-surface-variant/60 tracking-wider uppercase">
-            © 2024 WorldCup Live · The Gold Standard of Football
+            © 2026 WorldCup Live · The Gold Standard of Football
           </p>
         </div>
         <nav className="flex flex-wrap justify-center gap-md">
