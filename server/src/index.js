@@ -12,7 +12,19 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
 
-app.use(cors({ origin: CLIENT_URL, credentials: true }));
+// Allow one or more comma-separated client origins (e.g. local + Vercel).
+// Trailing slashes are tolerated. Requests with no Origin (curl, health
+// checks, native players) are allowed through.
+const allowedOrigins = CLIENT_URL.split(",").map((o) => o.trim().replace(/\/$/, "")).filter(Boolean);
+app.use(
+  cors({
+    origin(origin, cb) {
+      if (!origin || allowedOrigins.includes(origin.replace(/\/$/, ""))) return cb(null, true);
+      return cb(null, false);
+    },
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 app.get("/api/health", (req, res) => {

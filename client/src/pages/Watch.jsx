@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import Hls from "hls.js";
+import { API_BASE } from "../api";
 
 function buildProxyUrl(server) {
   const token = localStorage.getItem("wc_token") || "";
@@ -8,7 +9,7 @@ function buildProxyUrl(server) {
   const p = new URLSearchParams({ url: raw, token });
   if (server.header?.referer) p.set("referer", server.header.referer);
   if (server.header?.["user-agent"]) p.set("ua", server.header["user-agent"]);
-  return `/api/stream/proxy?${p.toString()}`;
+  return `${API_BASE}/stream/proxy?${p.toString()}`;
 }
 
 const TYPE_META = {
