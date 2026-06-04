@@ -7,15 +7,23 @@ const router = express.Router();
 function upstreamHeaders(req) {
   const headers = {
     "User-Agent": req.query.ua || "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    Accept: "*/*",
   };
   if (req.query.referer) headers["Referer"] = req.query.referer;
   if (req.query.origin) headers["Origin"] = req.query.origin;
+  // Forward Range so byte-range segment requests work.
+  if (req.headers.range) headers["Range"] = req.headers.range;
   return headers;
 }
 
 // Re-sign a URL so it flows back through this proxy with the same headers.
 function proxify(absUrl, req) {
-  const base = `${req.protocol}://${req.get("host")}/api/stream/proxy`;
+  // Behind Railway/Vercel the app sees http internally; trust the forwarded
+  // proto so rewritten URLs stay https (otherwise the HTTPS page blocks them
+  // as mixed content).
+  const proto = (req.headers["x-forwarded-proto"] || req.protocol || "https").split(",")[0].trim();
+  const host = req.headers["x-forwarded-host"] || req.get("host");
+  const base = `${proto}://${host}/api/stream/proxy`;
   const p = new URLSearchParams({ url: absUrl });
   if (req.query.referer) p.set("referer", req.query.referer);
   if (req.query.ua) p.set("ua", req.query.ua);
@@ -79,8 +87,11 @@ router.get("/proxy", requireAuth, requirePaid, async (req, res) => {
     if (ctype) res.setHeader("Content-Type", ctype);
     const len = upstream.headers.get("content-length");
     if (len) res.setHeader("Content-Length", len);
+    const range = upstream.headers.get("content-range");
+    if (range) res.setHeader("Content-Range", range);
+    res.setHeader("Accept-Ranges", "bytes");
     const buf = Buffer.from(await upstream.arrayBuffer());
-    return res.send(buf);
+    return res.status(upstream.status).send(buf);
   } catch (err) {
     console.error("Proxy error:", err.message);
     res.status(502).json({ error: "Stream proxy failed" });

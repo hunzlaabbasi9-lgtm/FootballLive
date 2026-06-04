@@ -9,6 +9,9 @@ import matchesRoutes from "./routes/matches.js";
 import streamRoutes from "./routes/stream.js";
 
 const app = express();
+// Railway/Vercel sit in front of the app — trust X-Forwarded-* so req.protocol
+// reflects https (needed for correct stream-proxy URL rewriting).
+app.set("trust proxy", true);
 const PORT = process.env.PORT || 5000;
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
 
