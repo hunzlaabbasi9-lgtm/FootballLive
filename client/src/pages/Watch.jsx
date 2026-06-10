@@ -25,6 +25,7 @@ export default function Watch() {
   const [match, setMatch] = useState(null);
   const [active, setActive] = useState(0);
   const [playerError, setPlayerError] = useState("");
+  const failedRef = useRef(new Set());
 
   useEffect(() => {
     const stored = sessionStorage.getItem("wc_match");
@@ -35,6 +36,28 @@ export default function Watch() {
   const current = servers[active];
   const isDrm = current?.type === "drm";
   const live = match?.match_status === "live";
+
+  // Auto-select the most reliable server first (direct > referer), skip drm.
+  useEffect(() => {
+    if (!servers.length) return;
+    failedRef.current = new Set();
+    const direct = servers.findIndex((s) => s.type === "direct");
+    const playable = servers.findIndex((s) => s.type !== "drm");
+    setActive(direct >= 0 ? direct : playable >= 0 ? playable : 0);
+    setPlayerError("");
+  }, [servers]);
+
+  // Advance to the next non-failed, non-drm server. Returns false if none left.
+  const failover = () => {
+    failedRef.current.add(active);
+    const next = servers.findIndex((s, i) => s.type !== "drm" && !failedRef.current.has(i));
+    if (next >= 0) {
+      setActive(next);
+      return true;
+    }
+    setPlayerError("Every server failed for this match. Please try another match.");
+    return false;
+  };
 
   useEffect(() => {
     if (!current || isDrm) return;
@@ -52,17 +75,18 @@ export default function Watch() {
       hls.attachMedia(video);
       hls.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(() => {}));
       hls.on(Hls.Events.ERROR, (_e, data) => {
-        if (data.fatal) setPlayerError("This stream could not be loaded. Try another server.");
+        if (data.fatal) failover(); // try the next server automatically
       });
     } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
       video.src = src;
       video.addEventListener("loadedmetadata", () => video.play().catch(() => {}));
-      video.addEventListener("error", () => setPlayerError("This stream could not be loaded. Try another server."));
+      video.addEventListener("error", () => failover());
     } else {
       setPlayerError("Your browser cannot play HLS streams.");
     }
 
     return () => { if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null; } };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current, isDrm]);
 
   if (!match) {

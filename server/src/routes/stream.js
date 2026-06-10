@@ -10,7 +10,17 @@ function upstreamHeaders(req) {
     Accept: "*/*",
   };
   if (req.query.referer) headers["Referer"] = req.query.referer;
-  if (req.query.origin) headers["Origin"] = req.query.origin;
+  // Many CDNs reject when a Referer is present but Origin is missing. If an
+  // explicit origin wasn't passed, derive it from the referer.
+  let origin = req.query.origin;
+  if (!origin && req.query.referer) {
+    try {
+      origin = new URL(req.query.referer).origin;
+    } catch {
+      /* ignore malformed referer */
+    }
+  }
+  if (origin) headers["Origin"] = origin;
   // Forward Range so byte-range segment requests work.
   if (req.headers.range) headers["Range"] = req.headers.range;
   return headers;
