@@ -61,6 +61,10 @@ Open **http://localhost:5173**.
 2. `requirePaid` — `/api/matches` and `/api/stream/*` also require `user.hasPaid`.
 3. The client mirrors this: routes are wrapped in `<ProtectedRoute requirePaid>`, so an unpaid user is always redirected to `/paywall`.
 
+## TV Broadcasters
+The **Matches** page has a **TV Broadcasters** tab (alongside All / Live / Upcoming). It lists the official FIFA World Cup 2026 broadcasters (BBC, FOX/FS1, TSN, SBS, Das Erste, beIN, CazéTV, CCTV-5, etc.) and plays embeddable feeds from the free [iptv-org API](https://github.com/iptv-org/api) when available. Rights-holder streams without a community feed (iPlayer, ITVX, Peacock, MagentaTV) appear as official platform cards. Direct URL: `/matches?tab=tv`.
+
 ## Notes on streaming
-- `direct` (HLS) and `referer` streams play via hls.js, routed through the backend proxy which injects the required `Referer`/`User-Agent` headers (browsers can't set these on media requests).
-- `drm` (Clearkey MPEG-DASH) streams need a native player; the UI guides the user to pick another server.
+- All RapidAPI match streams (`direct`, `referer`, `drm`) route through `/api/stream/proxy` — signed CDN URLs (cdnfaster `sign`/`expire`) 403 if fetched directly from the browser.
+- `referer` (CDN) streams are proxied with full browser headers (`Origin`, `Sec-Fetch-*`, exact UA) to reduce 403s. IP-locked mirrors may still fail.
+- `drm` Clearkey MPEG-DASH plays via dash.js; manifests, segments, and license URLs are proxied.

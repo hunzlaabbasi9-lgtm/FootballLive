@@ -6,6 +6,7 @@ import { initDb } from "./db.js";
 import authRoutes from "./routes/auth.js";
 import paymentRoutes, { CRYPTO_ENABLED } from "./routes/payment.js";
 import matchesRoutes from "./routes/matches.js";
+import channelsRoutes from "./routes/channels.js";
 import streamRoutes from "./routes/stream.js";
 
 const app = express();
@@ -41,6 +42,7 @@ app.get("/api/health", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api", matchesRoutes); // exposes /api/matches
+app.use("/api", channelsRoutes); // exposes /api/channels
 app.use("/api/stream", streamRoutes);
 
 app.use((req, res) => res.status(404).json({ error: "Not found" }));

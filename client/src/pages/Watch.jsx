@@ -1,16 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import Hls from "hls.js";
-import { API_BASE } from "../api";
-
-function buildProxyUrl(server) {
-  const token = localStorage.getItem("wc_token") || "";
-  const raw = (server.url || "").split("|")[0];
-  const p = new URLSearchParams({ url: raw, token });
-  if (server.header?.referer) p.set("referer", server.header.referer);
-  if (server.header?.["user-agent"]) p.set("ua", server.header["user-agent"]);
-  return `${API_BASE}/stream/proxy?${p.toString()}`;
-}
+import api from "../api";
+import StreamPlayer from "../components/StreamPlayer";
+import { isIpLockedCdn, matchServers } from "../streams";
 
 const TYPE_META = {
   direct: { icon: "cloud", tag: "DIRECT", sub: "Low latency · Ultra HD" },
@@ -20,74 +12,85 @@ const TYPE_META = {
 
 export default function Watch() {
   const { index } = useParams();
-  const videoRef = useRef(null);
-  const hlsRef = useRef(null);
   const [match, setMatch] = useState(null);
   const [active, setActive] = useState(0);
   const [playerError, setPlayerError] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
   const failedRef = useRef(new Set());
 
   useEffect(() => {
-    const stored = sessionStorage.getItem("wc_match");
-    if (stored) setMatch(JSON.parse(stored));
+    let cancelled = false;
+
+    async function load() {
+      const stored = sessionStorage.getItem("wc_match");
+      if (!stored) return;
+      const cached = JSON.parse(stored);
+      setMatch(cached);
+
+      setRefreshing(true);
+      try {
+        const { data } = await api.get("/matches/refresh", {
+          params: {
+            home: cached.home_team_name,
+            away: cached.away_team_name,
+            status: cached.match_status,
+          },
+        });
+        if (!cancelled && data.match) {
+          setMatch(data.match);
+          sessionStorage.setItem("wc_match", JSON.stringify(data.match));
+        }
+      } catch {
+        /* keep cached match */
+      } finally {
+        if (!cancelled) setRefreshing(false);
+      }
+    }
+
+    load();
+    return () => { cancelled = true; };
   }, [index]);
 
-  const servers = useMemo(() => match?.servers || [], [match]);
+  const servers = useMemo(() => matchServers(match?.servers), [match]);
   const current = servers[active];
-  const isDrm = current?.type === "drm";
   const live = match?.match_status === "live";
 
-  // Auto-select the most reliable server first (direct > referer), skip drm.
+  const serverPriority = { direct: 0, referer: 1, drm: 2 };
+
+  const pickBestServer = (exclude) => {
+    let best = -1;
+    let bestScore = 99;
+    servers.forEach((s, i) => {
+      if (exclude.has(i) || isIpLockedCdn(s)) return;
+      const pri = serverPriority[s.type] ?? 5;
+      const reach = s.reachable === false ? 10 : 0;
+      const score = reach + pri;
+      if (score < bestScore) {
+        bestScore = score;
+        best = i;
+      }
+    });
+    return best;
+  };
+
   useEffect(() => {
     if (!servers.length) return;
     failedRef.current = new Set();
-    const direct = servers.findIndex((s) => s.type === "direct");
-    const playable = servers.findIndex((s) => s.type !== "drm");
-    setActive(direct >= 0 ? direct : playable >= 0 ? playable : 0);
+    setActive(pickBestServer(new Set()));
     setPlayerError("");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [servers]);
 
-  // Advance to the next non-failed, non-drm server. Returns false if none left.
   const failover = () => {
     failedRef.current.add(active);
-    const next = servers.findIndex((s, i) => s.type !== "drm" && !failedRef.current.has(i));
+    const next = pickBestServer(failedRef.current);
     if (next >= 0) {
       setActive(next);
       return true;
     }
-    setPlayerError("Every server failed for this match. Please try another match.");
+    setPlayerError("Every server failed for this match. Try TV Broadcasters or another match.");
     return false;
   };
-
-  useEffect(() => {
-    if (!current || isDrm) return;
-    const video = videoRef.current;
-    if (!video) return;
-
-    setPlayerError("");
-    const src = buildProxyUrl(current);
-    if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null; }
-
-    if (Hls.isSupported()) {
-      const hls = new Hls({ enableWorker: true, lowLatencyMode: true });
-      hlsRef.current = hls;
-      hls.loadSource(src);
-      hls.attachMedia(video);
-      hls.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(() => {}));
-      hls.on(Hls.Events.ERROR, (_e, data) => {
-        if (data.fatal) failover(); // try the next server automatically
-      });
-    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-      video.src = src;
-      video.addEventListener("loadedmetadata", () => video.play().catch(() => {}));
-      video.addEventListener("error", () => failover());
-    } else {
-      setPlayerError("Your browser cannot play HLS streams.");
-    }
-
-    return () => { if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null; } };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [current, isDrm]);
 
   if (!match) {
     return (
@@ -102,7 +105,6 @@ export default function Watch() {
 
   return (
     <div className="w-full">
-      {/* Back nav */}
       <div className="max-w-[1440px] mx-auto px-5 sm:px-margin-edge py-md">
         <Link to="/matches" className="inline-flex items-center gap-2 text-on-surface/40 hover:text-primary transition-colors font-label-caps text-[10px] tracking-widest uppercase group">
           <span className="material-symbols-outlined text-[16px] group-hover:-translate-x-1 transition-transform">arrow_back</span>
@@ -111,23 +113,36 @@ export default function Watch() {
       </div>
 
       <div className="max-w-[1440px] mx-auto flex flex-col lg:flex-row gap-gutter lg:px-margin-edge pb-xl">
-        {/* Video + info */}
         <div className="flex-grow w-full min-w-0">
           <div className="relative aspect-video w-full bg-black overflow-hidden lg:rounded-2xl player-glow border border-white/5">
-            {isDrm ? (
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-center gap-2 px-6">
-                <span className="material-symbols-outlined text-primary text-5xl">lock</span>
-                <h3 className="bebas-headline text-3xl tracking-wide">DRM-Protected Stream</h3>
+            {!servers.length ? (
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center gap-3 px-6">
+                <span className="material-symbols-outlined text-primary text-5xl">tv_off</span>
+                <h3 className="bebas-headline text-3xl tracking-wide">No Match Stream</h3>
                 <p className="text-on-surface-variant max-w-md text-sm">
-                  This server uses Clearkey DRM (MPEG-DASH) which needs a native player. Pick a <b>direct</b> or <b>referer</b> server from the list.
+                  No servers for this match. Watch the World Cup on FOX, Globo, Telemundo, and more.
                 </p>
+                <Link
+                  to="/matches?tab=tv"
+                  className="bg-secondary text-on-secondary px-lg py-sm rounded-full font-label-caps text-label-caps flex items-center gap-xs hover:brightness-110 transition-all"
+                >
+                  <span className="material-symbols-outlined text-[18px]">live_tv</span>
+                  TV Broadcasters
+                </Link>
+              </div>
+            ) : refreshing ? (
+              <div className="absolute inset-0 grid place-items-center">
+                <div className="spinner" />
               </div>
             ) : (
-              <video ref={videoRef} controls playsInline className="w-full h-full object-contain bg-black" />
+              <StreamPlayer
+                key={`${current?.url}-${active}`}
+                source={current}
+                onFatalError={() => failover()}
+              />
             )}
 
-            {/* Live badge */}
-            {live && !isDrm && (
+            {live && current && (
               <div className="absolute top-md right-md bg-black/40 backdrop-blur-md px-sm py-1.5 rounded-full flex items-center gap-2 border border-white/10 pointer-events-none">
                 <span className="w-1.5 h-1.5 rounded-full bg-error pulse-red" />
                 <span className="font-label-caps text-[9px] tracking-[0.2em] text-on-surface">LIVE</span>
@@ -135,7 +150,6 @@ export default function Watch() {
             )}
           </div>
 
-          {/* Match info */}
           <div className="px-5 sm:px-margin-edge lg:px-0 mt-lg">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-md">
               <div>
@@ -150,19 +164,21 @@ export default function Watch() {
               </div>
             </div>
             {playerError && (
-              <div className="mt-md px-4 py-3 rounded-lg bg-error-container/20 border border-error/30 text-error text-sm">{playerError}</div>
+              <div className="mt-md px-4 py-3 rounded-lg bg-error-container/20 border border-error/30 text-error text-sm flex flex-col sm:flex-row sm:items-center gap-2">
+                <span>{playerError}</span>
+                <Link to="/matches?tab=tv" className="text-primary underline shrink-0">TV Broadcasters →</Link>
+              </div>
             )}
           </div>
         </div>
 
-        {/* Server sidebar */}
         <aside className="w-full lg:w-[400px] px-5 sm:px-margin-edge lg:px-0 shrink-0">
           <div className="glass-panel rounded-2xl overflow-hidden shadow-2xl">
             <div className="p-md bg-white/5 border-b border-white/5 flex items-center justify-between">
               <h2 className="font-label-caps text-[11px] tracking-[0.15em] text-primary/60 uppercase">Streaming Servers</h2>
               <div className="flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-secondary-fixed-dim shadow-[0_0_8px_#62de8e]" />
-                <span className="text-[10px] text-secondary-fixed-dim font-medium">Optimal</span>
+                <span className="text-[10px] text-secondary-fixed-dim font-medium">{servers.length} total</span>
               </div>
             </div>
 
@@ -173,36 +189,56 @@ export default function Watch() {
                 return (
                   <button
                     key={i}
-                    onClick={() => setActive(i)}
+                    onClick={() => { setActive(i); setPlayerError(""); }}
                     className={`p-4 flex items-center justify-between text-left transition-all group ${isActive ? "bg-primary/5 border-l-[3px] border-primary" : "hover:bg-white/5 border-l-[3px] border-transparent"}`}
                   >
                     <div className="flex items-center gap-4 min-w-0">
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isActive ? "bg-primary/10" : "bg-white/5 group-hover:bg-white/10"}`}>
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isActive ? "bg-primary/10" : "bg-white/5"}`}>
                         <span className={`material-symbols-outlined text-[20px] ${isActive ? "text-primary fill-1" : "opacity-40"}`} style={isActive ? { fontVariationSettings: "'FILL' 1" } : undefined}>
                           {meta.icon}
                         </span>
                       </div>
                       <div className="min-w-0">
-                        <div className={`font-title-md text-[14px] truncate ${isActive ? "text-primary font-bold" : "font-medium group-hover:text-primary transition-colors"}`}>
+                        <div className={`font-title-md text-[14px] truncate ${isActive ? "text-primary font-bold" : "font-medium"}`}>
                           {s.name || `Server ${i + 1}`}
                         </div>
                         <div className="text-[11px] text-on-surface-variant/60 truncate">{meta.sub}</div>
                       </div>
                     </div>
-                    <span className={`text-[9px] font-bold px-2 py-1 rounded tracking-wider shrink-0 ${isActive ? "bg-primary/20 text-primary" : "text-on-surface/40 border border-white/10 group-hover:border-primary/40 group-hover:text-primary transition-colors"}`}>
-                      {isActive ? "ACTIVE" : meta.tag}
+                    <span className={`text-[9px] font-bold px-2 py-1 rounded tracking-wider shrink-0 ${
+                      isActive ? "bg-primary/20 text-primary"
+                      : isIpLockedCdn(s) ? "text-error/70 border border-error/20"
+                      : s.reachable === false ? "text-error/70 border border-error/20"
+                      : "text-on-surface/40 border border-white/10"
+                    }`}>
+                      {isActive ? "ACTIVE" : isIpLockedCdn(s) ? "IP-LOCKED" : s.reachable === false ? "OFFLINE" : meta.tag}
                     </span>
                   </button>
                 );
               })}
               {servers.length === 0 && (
-                <p className="p-4 text-on-surface-variant/60 text-sm">No servers available for this match.</p>
+                <div className="p-4 text-on-surface-variant/60 text-sm">
+                  No servers for this match.{" "}
+                  <Link to="/matches?tab=tv" className="text-primary underline">Watch on TV Broadcasters</Link>
+                </div>
               )}
             </div>
 
-            <div className="p-md bg-black/20 flex items-start gap-sm text-on-surface-variant/40">
+            <div className="p-md bg-black/20 border-t border-white/5 flex items-start gap-sm text-on-surface-variant/40">
               <span className="material-symbols-outlined text-[16px] mt-0.5">info</span>
-              <p className="text-[11px] leading-snug">Experiencing buffering? Try switching servers. DRM streams require a native player.</p>
+              <p className="text-[11px] leading-snug">
+                Direct, CDN, and DRM servers from RapidAPI. Auto-failover tries each type. CDN/DRM use the proxy with full browser headers.
+              </p>
+            </div>
+
+            <div className="p-md bg-black/20 border-t border-white/5">
+              <Link
+                to="/matches?tab=tv"
+                className="flex items-center gap-2 text-[11px] text-on-surface-variant/60 hover:text-primary transition-colors"
+              >
+                <span className="material-symbols-outlined text-[16px]">live_tv</span>
+                World Cup on FOX, Globo, Telemundo & more
+              </Link>
             </div>
           </div>
         </aside>
