@@ -79,9 +79,9 @@ export default function TvBroadcastersTab() {
             Official FIFA World Cup 2026 broadcasters by region.
           </p>
           <p className="text-on-surface-variant/70 text-xs max-w-xl mt-1">
-            <span className="text-primary font-medium">Watch here</span> = free community stream plays in the player below.
+            <span className="text-primary font-medium">Watch here</span> — play in the player below.
             <span className="text-on-surface-variant/50"> · </span>
-            <span className="text-on-surface font-medium">Official link</span> = opens the broadcaster&apos;s site (iPlayer, TSN, ViX, etc.) — no embeddable feed available.
+            <span className="text-on-surface font-medium">Official link</span> — open the broadcaster&apos;s website (iPlayer, TSN, ViX, etc.).
           </p>
         </div>
         <div className="shrink-0 w-full sm:w-72">
@@ -141,8 +141,8 @@ export default function TvBroadcastersTab() {
             </span>
             <p className="text-on-surface-variant max-w-md text-sm">
               {(current?.external || []).length > 0
-                ? `No free community stream for ${current?.name || "this region"} right now. Use the official platforms below — they carry World Cup rights in this region.`
-                : `No embeddable channel for ${current?.name || "this region"} right now. Try another region or check back later.`}
+                ? `No in-app channel for ${current?.name || "this region"} right now. Use the official platforms below for World Cup coverage.`
+                : `No in-app channel for ${current?.name || "this region"} right now. Try another region or check back later.`}
             </p>
           </div>
         )}
@@ -209,7 +209,7 @@ export default function TvBroadcastersTab() {
                   <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="font-title-md text-[15px] font-medium group-hover:text-primary transition-colors">{ex.name}</h3>
                     <span className="text-[9px] font-bold text-on-surface-variant/70 px-sm py-0.5 rounded-full border border-white/15 shrink-0">
-                      OFFICIAL LINK
+                      OFFICIAL
                     </span>
                   </div>
                   {ex.note && <p className="text-[11px] text-on-surface-variant/60 mt-1">{ex.note}</p>}

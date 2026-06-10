@@ -57,13 +57,8 @@ export default function Matches() {
   return (
     <div className="w-full">
       {source === "mock" && !isTv && (
-        <div className="text-center text-[12px] py-2 px-4 bg-primary text-on-primary font-semibold">
-          ⚙️ Demo data — add BOHO_RAPIDAPI_KEY on the server to stream real live matches.
-        </div>
-      )}
-      {source === "boho" && !isTv && (
-        <div className="text-center text-[12px] py-2 px-4 bg-secondary/20 text-secondary border-b border-secondary/30 font-semibold">
-          SportSRC live embeds · powered by BOHO API
+        <div className="text-center text-[12px] py-2 px-4 bg-primary/90 text-on-primary font-semibold">
+          Preview schedule — full live coverage during matches.
         </div>
       )}
 

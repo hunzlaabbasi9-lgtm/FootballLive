@@ -62,7 +62,7 @@ export function normalizeBohoMatch(m, league = {}, sources = []) {
           url: s.embedUrl,
           language: s.language || null,
         }))
-      : [{ name: "SportSRC", type: "embed", url: null }];
+      : [{ name: "Live Match Feed", type: "embed", url: null }];
 
   return {
     boho_id: m.id,

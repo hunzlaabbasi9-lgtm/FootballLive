@@ -6,10 +6,10 @@ import StreamPlayer from "../components/StreamPlayer";
 import { isIpLockedCdn, matchServers } from "../streams";
 
 const TYPE_META = {
-  embed: { icon: "smart_display", tag: "EMBED", sub: "SportSRC live player" },
-  direct: { icon: "cloud", tag: "DIRECT", sub: "Low latency · Ultra HD" },
-  referer: { icon: "cloud_queue", tag: "CDN", sub: "High-bandwidth mirror" },
-  drm: { icon: "security", tag: "DRM", sub: "Encrypted premium feed" },
+  embed: { icon: "smart_display", tag: "LIVE", sub: "Match stream · HD" },
+  direct: { icon: "cloud", tag: "HD", sub: "Low latency stream" },
+  referer: { icon: "cloud_queue", tag: "MIRROR", sub: "Backup stream" },
+  drm: { icon: "security", tag: "SECURE", sub: "Protected feed" },
 };
 
 function isEmbedServer(s) {
@@ -202,7 +202,7 @@ export default function Watch() {
                       : isIpLockedCdn(s) ? "text-error/70 border border-error/20"
                       : "text-on-surface/40 border border-white/10"
                     }`}>
-                      {isActive ? "ACTIVE" : offline ? "PENDING" : isIpLockedCdn(s) ? "IP-LOCKED" : meta.tag}
+                      {isActive ? "ACTIVE" : offline ? "PENDING" : isIpLockedCdn(s) ? "UNAVAILABLE" : meta.tag}
                     </span>
                   </button>
                 );
@@ -213,8 +213,8 @@ export default function Watch() {
               <span className="material-symbols-outlined text-[16px] mt-0.5">info</span>
               <p className="text-[11px] leading-snug">
                 {embedMode
-                  ? "Live streams via SportSRC embed. Links may appear shortly before kickoff."
-                  : "Direct, CDN, and DRM servers. CDN/DRM use the proxy with full browser headers."}
+                  ? "Live match streams. Video is usually available shortly before kickoff."
+                  : "Multiple stream options. If one fails, try another below."}
               </p>
             </div>
 

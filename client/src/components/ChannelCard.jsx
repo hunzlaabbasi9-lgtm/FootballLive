@@ -23,7 +23,7 @@ export default function ChannelCard({ channel, active, onClick }) {
           </span>
         ) : (
           <span className="text-[9px] font-bold text-primary/80 px-sm py-1 rounded-full border border-primary/25 bg-primary/10">
-            WATCH HERE
+            IN APP
           </span>
         )}
       </div>
