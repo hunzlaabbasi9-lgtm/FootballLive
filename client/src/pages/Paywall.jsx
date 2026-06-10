@@ -16,7 +16,7 @@ export default function Paywall() {
   const [params] = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [cfg, setCfg] = useState({ priceCents: 500, stripeEnabled: false });
+  const [cfg, setCfg] = useState({ priceAmount: 5, currency: "USDT", cryptoEnabled: false });
 
   useEffect(() => {
     if (user?.hasPaid) navigate("/matches", { replace: true });
@@ -26,7 +26,7 @@ export default function Paywall() {
     api.get("/payment/config").then((r) => setCfg(r.data)).catch(() => {});
   }, []);
 
-  const price = (cfg.priceCents / 100).toFixed(0);
+  const price = Number(cfg.priceAmount || 5).toFixed(0);
   const canceled = params.get("canceled");
 
   const pay = async () => {
@@ -63,8 +63,8 @@ export default function Paywall() {
           <h1 className="bebas-headline text-headline-lg-mobile text-on-surface mb-xs tracking-tight uppercase">Unlock Stadium Access</h1>
           <p className="font-body-sm text-on-surface-variant mb-md opacity-70">Experience every moment of glory in real-time.</p>
           <div className="flex flex-col items-center">
-            <span className="bebas-headline text-[64px] gold-gradient-text leading-tight">${price} USD</span>
-            <span className="font-label-caps text-[11px] text-primary/80 tracking-[0.2em] mt-2">VIP ONE-TIME ACCESS</span>
+            <span className="bebas-headline text-[64px] gold-gradient-text leading-tight">{price} USDT</span>
+            <span className="font-label-caps text-[11px] text-primary/80 tracking-[0.2em] mt-2">VIP ONE-TIME ACCESS · PAID IN CRYPTO</span>
           </div>
         </div>
 
@@ -93,13 +93,13 @@ export default function Paywall() {
           disabled={loading}
           className="w-full cinematic-button button-shine text-on-primary h-16 rounded-xl font-title-md flex items-center justify-center gap-xs uppercase tracking-widest active:scale-[0.98] transition-all disabled:opacity-60"
         >
-          {loading ? "Redirecting…" : `Pay $${price} & Watch Now`}
+          {loading ? "Redirecting…" : `Pay ${price} USDT & Watch Now`}
           {!loading && <span className="material-symbols-outlined fill-1" style={{ fontVariationSettings: "'FILL' 1" }}>bolt</span>}
         </button>
 
         <div className="mt-lg pt-lg border-t border-white/5 text-center">
           <p className="font-label-caps text-[10px] tracking-widest text-on-surface-variant opacity-60 uppercase">
-            {cfg.stripeEnabled ? "🔒 Secured by Stripe · 256-bit encryption" : "⚙️ Demo mode — no real charge"}
+            {cfg.cryptoEnabled ? "🔒 Paid in USDT (TRC-20) · on-chain & irreversible" : "⚙️ Demo mode — no real charge"}
           </p>
         </div>
       </div>

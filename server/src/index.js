@@ -4,7 +4,7 @@ import cors from "cors";
 
 import { initDb } from "./db.js";
 import authRoutes from "./routes/auth.js";
-import paymentRoutes, { STRIPE_ENABLED } from "./routes/payment.js";
+import paymentRoutes, { CRYPTO_ENABLED } from "./routes/payment.js";
 import matchesRoutes from "./routes/matches.js";
 import streamRoutes from "./routes/stream.js";
 
@@ -33,7 +33,7 @@ app.use(express.json());
 app.get("/api/health", (req, res) => {
   res.json({
     ok: true,
-    stripe: STRIPE_ENABLED ? "live" : "mock",
+    payments: CRYPTO_ENABLED ? "usdt-live" : "mock",
     matches: process.env.RAPIDAPI_KEY ? "live" : "mock",
   });
 });
@@ -50,7 +50,7 @@ initDb()
     app.listen(PORT, () => {
       console.log(`\n  ⚽  World Cup Stream API running on http://localhost:${PORT}`);
       console.log(`      Database: Neon PostgreSQL (connected)`);
-      console.log(`      Payments: ${STRIPE_ENABLED ? "Stripe (live keys)" : "MOCK mode"}`);
+      console.log(`      Payments: ${CRYPTO_ENABLED ? "NOWPayments USDT (live)" : "MOCK mode"}`);
       console.log(`      Matches:  ${process.env.RAPIDAPI_KEY ? "RapidAPI (live)" : "MOCK data"}\n`);
     });
   })
