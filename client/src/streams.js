@@ -16,7 +16,7 @@ export function parseStreamUrl(server) {
 }
 
 export function matchServers(servers = []) {
-  return (servers || []).filter((s) => s?.url);
+  return (servers || []).filter((s) => s?.url || s?.type === "embed");
 }
 
 function proxyParams(server, token) {

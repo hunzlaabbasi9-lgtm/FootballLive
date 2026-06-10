@@ -1,14 +1,20 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import api from "../api";
+import EmbedPlayer from "../components/EmbedPlayer";
 import StreamPlayer from "../components/StreamPlayer";
 import { isIpLockedCdn, matchServers } from "../streams";
 
 const TYPE_META = {
+  embed: { icon: "smart_display", tag: "EMBED", sub: "SportSRC live player" },
   direct: { icon: "cloud", tag: "DIRECT", sub: "Low latency · Ultra HD" },
   referer: { icon: "cloud_queue", tag: "CDN", sub: "High-bandwidth mirror" },
   drm: { icon: "security", tag: "DRM", sub: "Encrypted premium feed" },
 };
+
+function isEmbedServer(s) {
+  return s?.type === "embed";
+}
 
 export default function Watch() {
   const { index } = useParams();
@@ -16,7 +22,6 @@ export default function Watch() {
   const [active, setActive] = useState(0);
   const [playerError, setPlayerError] = useState("");
   const [refreshing, setRefreshing] = useState(false);
-  const failedRef = useRef(new Set());
 
   useEffect(() => {
     let cancelled = false;
@@ -31,6 +36,7 @@ export default function Watch() {
       try {
         const { data } = await api.get("/matches/refresh", {
           params: {
+            boho_id: cached.boho_id,
             home: cached.home_team_name,
             away: cached.away_team_name,
             status: cached.match_status,
@@ -52,45 +58,16 @@ export default function Watch() {
   }, [index]);
 
   const servers = useMemo(() => matchServers(match?.servers), [match]);
+  const embedMode = servers.length > 0 && servers.every(isEmbedServer);
   const current = servers[active];
   const live = match?.match_status === "live";
 
-  const serverPriority = { direct: 0, referer: 1, drm: 2 };
-
-  const pickBestServer = (exclude) => {
-    let best = -1;
-    let bestScore = 99;
-    servers.forEach((s, i) => {
-      if (exclude.has(i) || isIpLockedCdn(s)) return;
-      const pri = serverPriority[s.type] ?? 5;
-      const reach = s.reachable === false ? 10 : 0;
-      const score = reach + pri;
-      if (score < bestScore) {
-        bestScore = score;
-        best = i;
-      }
-    });
-    return best;
-  };
-
   useEffect(() => {
     if (!servers.length) return;
-    failedRef.current = new Set();
-    setActive(pickBestServer(new Set()));
+    const firstWithUrl = servers.findIndex((s) => s.url);
+    setActive(firstWithUrl >= 0 ? firstWithUrl : 0);
     setPlayerError("");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [servers]);
-
-  const failover = () => {
-    failedRef.current.add(active);
-    const next = pickBestServer(failedRef.current);
-    if (next >= 0) {
-      setActive(next);
-      return true;
-    }
-    setPlayerError("Every server failed for this match. Try TV Broadcasters or another match.");
-    return false;
-  };
 
   if (!match) {
     return (
@@ -102,6 +79,8 @@ export default function Watch() {
       </div>
     );
   }
+
+  const matchTitle = `${match.home_team_name} vs ${match.away_team_name}`;
 
   return (
     <div className="w-full">
@@ -120,7 +99,7 @@ export default function Watch() {
                 <span className="material-symbols-outlined text-primary text-5xl">tv_off</span>
                 <h3 className="bebas-headline text-3xl tracking-wide">No Match Stream</h3>
                 <p className="text-on-surface-variant max-w-md text-sm">
-                  No servers for this match. Watch the World Cup on FOX, Globo, Telemundo, and more.
+                  No stream for this match yet. Try TV Broadcasters or another fixture.
                 </p>
                 <Link
                   to="/matches?tab=tv"
@@ -134,15 +113,21 @@ export default function Watch() {
               <div className="absolute inset-0 grid place-items-center">
                 <div className="spinner" />
               </div>
+            ) : embedMode ? (
+              <EmbedPlayer
+                key={current?.url || active}
+                url={current?.url}
+                title={matchTitle}
+              />
             ) : (
               <StreamPlayer
                 key={`${current?.url}-${active}`}
                 source={current}
-                onFatalError={() => failover()}
+                onFatalError={() => setPlayerError("This server failed. Try another stream below.")}
               />
             )}
 
-            {live && current && (
+            {live && current?.url && (
               <div className="absolute top-md right-md bg-black/40 backdrop-blur-md px-sm py-1.5 rounded-full flex items-center gap-2 border border-white/10 pointer-events-none">
                 <span className="w-1.5 h-1.5 rounded-full bg-error pulse-red" />
                 <span className="font-label-caps text-[9px] tracking-[0.2em] text-on-surface">LIVE</span>
@@ -157,6 +142,9 @@ export default function Watch() {
                 <h1 className="bebas-headline text-headline-lg-mobile md:text-headline-lg flex items-center gap-sm uppercase">
                   {match.home_team_name} <span className="text-primary/40 text-sm font-sans font-bold">VS</span> {match.away_team_name}
                 </h1>
+                {match.status_detail && (
+                  <p className="text-on-surface-variant/70 text-sm mt-1">{match.status_detail}</p>
+                )}
               </div>
               <div className="flex items-center bg-surface-container-high/40 backdrop-blur rounded-2xl border border-white/5 overflow-hidden shrink-0">
                 <ScoreCell value={live ? match.homeTeamScore || 0 : "–"} label={abbr(match.home_team_name)} primary />
@@ -175,7 +163,9 @@ export default function Watch() {
         <aside className="w-full lg:w-[400px] px-5 sm:px-margin-edge lg:px-0 shrink-0">
           <div className="glass-panel rounded-2xl overflow-hidden shadow-2xl">
             <div className="p-md bg-white/5 border-b border-white/5 flex items-center justify-between">
-              <h2 className="font-label-caps text-[11px] tracking-[0.15em] text-primary/60 uppercase">Streaming Servers</h2>
+              <h2 className="font-label-caps text-[11px] tracking-[0.15em] text-primary/60 uppercase">
+                {embedMode ? "Stream Sources" : "Streaming Servers"}
+              </h2>
               <div className="flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-secondary-fixed-dim shadow-[0_0_8px_#62de8e]" />
                 <span className="text-[10px] text-secondary-fixed-dim font-medium">{servers.length} total</span>
@@ -184,8 +174,9 @@ export default function Watch() {
 
             <div className="flex flex-col divide-y divide-white/5">
               {servers.map((s, i) => {
-                const meta = TYPE_META[s.type] || { icon: "dns", tag: (s.type || "").toUpperCase(), sub: "Stream server" };
+                const meta = TYPE_META[s.type] || { icon: "dns", tag: (s.type || "").toUpperCase(), sub: "Stream" };
                 const isActive = i === active;
+                const offline = !s.url;
                 return (
                   <button
                     key={i}
@@ -200,34 +191,30 @@ export default function Watch() {
                       </div>
                       <div className="min-w-0">
                         <div className={`font-title-md text-[14px] truncate ${isActive ? "text-primary font-bold" : "font-medium"}`}>
-                          {s.name || `Server ${i + 1}`}
+                          {s.name || `Source ${i + 1}`}
                         </div>
                         <div className="text-[11px] text-on-surface-variant/60 truncate">{meta.sub}</div>
                       </div>
                     </div>
                     <span className={`text-[9px] font-bold px-2 py-1 rounded tracking-wider shrink-0 ${
                       isActive ? "bg-primary/20 text-primary"
+                      : offline ? "text-on-surface-variant/50 border border-white/10"
                       : isIpLockedCdn(s) ? "text-error/70 border border-error/20"
-                      : s.reachable === false ? "text-error/70 border border-error/20"
                       : "text-on-surface/40 border border-white/10"
                     }`}>
-                      {isActive ? "ACTIVE" : isIpLockedCdn(s) ? "IP-LOCKED" : s.reachable === false ? "OFFLINE" : meta.tag}
+                      {isActive ? "ACTIVE" : offline ? "PENDING" : isIpLockedCdn(s) ? "IP-LOCKED" : meta.tag}
                     </span>
                   </button>
                 );
               })}
-              {servers.length === 0 && (
-                <div className="p-4 text-on-surface-variant/60 text-sm">
-                  No servers for this match.{" "}
-                  <Link to="/matches?tab=tv" className="text-primary underline">Watch on TV Broadcasters</Link>
-                </div>
-              )}
             </div>
 
             <div className="p-md bg-black/20 border-t border-white/5 flex items-start gap-sm text-on-surface-variant/40">
               <span className="material-symbols-outlined text-[16px] mt-0.5">info</span>
               <p className="text-[11px] leading-snug">
-                Direct, CDN, and DRM servers from RapidAPI. Auto-failover tries each type. CDN/DRM use the proxy with full browser headers.
+                {embedMode
+                  ? "Live streams via SportSRC embed. Links may appear shortly before kickoff."
+                  : "Direct, CDN, and DRM servers. CDN/DRM use the proxy with full browser headers."}
               </p>
             </div>
 
@@ -237,7 +224,7 @@ export default function Watch() {
                 className="flex items-center gap-2 text-[11px] text-on-surface-variant/60 hover:text-primary transition-colors"
               >
                 <span className="material-symbols-outlined text-[16px]">live_tv</span>
-                World Cup on FOX, Globo, Telemundo & more
+                World Cup on FOX, Telemundo, SBS & more
               </Link>
             </div>
           </div>

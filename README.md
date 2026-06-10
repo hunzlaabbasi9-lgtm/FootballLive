@@ -49,7 +49,8 @@ Open **http://localhost:5173**.
 ## Modes (configured in `server/.env`)
 | Variable | Empty (default) | Set |
 |----------|-----------------|-----|
-| `RAPIDAPI_KEY` | Themed **mock matches** (a real test HLS stream plays) | Live matches from RapidAPI |
+| `BOHO_RAPIDAPI_KEY` | Falls back to 1xapi or **mock matches** | Live matches + SportSRC embeds (primary) |
+| `RAPIDAPI_KEY` | Used only if BOHO key is empty | Live matches from 1xapi RapidAPI |
 | `STRIPE_SECRET_KEY` | **Mock payment** (no real charge, instantly unlocks) | Real Stripe Checkout ($5) |
 
 ### Going live

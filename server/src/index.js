@@ -5,6 +5,7 @@ import cors from "cors";
 import { initDb } from "./db.js";
 import authRoutes from "./routes/auth.js";
 import paymentRoutes, { CRYPTO_ENABLED } from "./routes/payment.js";
+import { bohoConfigured } from "./bohoStream.js";
 import matchesRoutes from "./routes/matches.js";
 import channelsRoutes from "./routes/channels.js";
 import streamRoutes from "./routes/stream.js";
@@ -35,7 +36,7 @@ app.get("/api/health", (req, res) => {
   res.json({
     ok: true,
     payments: CRYPTO_ENABLED ? "usdt-live" : "mock",
-    matches: process.env.RAPIDAPI_KEY ? "live" : "mock",
+    matches: bohoConfigured() ? "boho" : process.env.RAPIDAPI_KEY ? "1xapi" : "mock",
   });
 });
 
@@ -53,7 +54,8 @@ initDb()
       console.log(`\n  ⚽  World Cup Stream API running on http://localhost:${PORT}`);
       console.log(`      Database: Neon PostgreSQL (connected)`);
       console.log(`      Payments: ${CRYPTO_ENABLED ? "NOWPayments USDT (live)" : "MOCK mode"}`);
-      console.log(`      Matches:  ${process.env.RAPIDAPI_KEY ? "RapidAPI (live)" : "MOCK data"}\n`);
+      const matchSrc = bohoConfigured() ? "BOHO SportSRC (primary)" : process.env.RAPIDAPI_KEY ? "1xapi RapidAPI" : "MOCK data";
+      console.log(`      Matches:  ${matchSrc}\n`);
     });
   })
   .catch((err) => {
