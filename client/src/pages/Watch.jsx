@@ -40,11 +40,12 @@ export default function Watch() {
             home: cached.home_team_name,
             away: cached.away_team_name,
             status: cached.match_status,
+            source: cached.__source,
           },
         });
         if (!cancelled && data.match) {
-          setMatch(data.match);
-          sessionStorage.setItem("wc_match", JSON.stringify(data.match));
+          setMatch({ ...data.match, __source: cached.__source });
+          sessionStorage.setItem("wc_match", JSON.stringify({ ...data.match, __source: cached.__source }));
         }
       } catch {
         /* keep cached match */

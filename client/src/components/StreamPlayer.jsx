@@ -1,6 +1,9 @@
 import { useEffect, useRef } from "react";
-import dashjs from "dashjs";
+import * as dashjs from "dashjs";
 import Hls from "hls.js";
+
+// dash.js v5 has no default export; namespace import exposes MediaPlayer, etc.
+const hasMediaSource = () => typeof window !== "undefined" && "MediaSource" in window;
 import { API_BASE } from "../api";
 import {
   buildLicenseProxyUrl,
@@ -64,7 +67,7 @@ export default function StreamPlayer({ source, onFatalError, className = "" }) {
 
       if (cancelled) return;
 
-      if (drm && dashjs.supportsMediaSource()) {
+      if (drm && dashjs.MediaPlayer && hasMediaSource()) {
         const player = dashjs.MediaPlayer().create();
         dashRef.current = player;
 

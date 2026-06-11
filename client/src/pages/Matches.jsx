@@ -11,6 +11,11 @@ const TABS = [
   { key: "tv", label: "TV Broadcasters" },
 ];
 
+const SOURCES = [
+  { key: "boho", label: "SportSRC", flag: "boho" },
+  { key: "1xapi", label: "1xAPI", flag: "oneXapi" },
+];
+
 export default function Matches() {
   const [searchParams, setSearchParams] = useSearchParams();
   const initialTab = TABS.some((t) => t.key === searchParams.get("tab")) ? searchParams.get("tab") : "all";
@@ -20,22 +25,47 @@ export default function Matches() {
   const [loading, setLoading] = useState(tab !== "tv");
   const [error, setError] = useState("");
 
+  // Which providers are configured + which one is selected.
+  const [avail, setAvail] = useState({ boho: false, oneXapi: false });
+  const [source, setSource] = useState(searchParams.get("src") || "boho");
+
+  // Discover available sources once.
+  useEffect(() => {
+    api.get("/match-sources").then((r) => {
+      setAvail(r.data);
+      // Default to the first available source if the current one isn't configured.
+      setSource((s) => {
+        const ok = (s === "boho" && r.data.boho) || (s === "1xapi" && r.data.oneXapi);
+        if (ok) return s;
+        if (r.data.boho) return "boho";
+        if (r.data.oneXapi) return "1xapi";
+        return s;
+      });
+    }).catch(() => {});
+  }, []);
+
+  const availableSources = SOURCES.filter((s) => avail[s.flag]);
+  const showSourceToggle = availableSources.length > 1 && tab !== "tv";
+
   const switchTab = (key) => {
     setTab(key);
     setPage(1);
-    if (key === "tv") {
-      setSearchParams({ tab: "tv" });
-    } else {
-      setSearchParams({});
-    }
+    setSearchParams(key === "tv" ? { tab: "tv" } : source !== "boho" ? { src: source } : {});
   };
 
-  const load = useCallback(async (status, pageNum) => {
+  const switchSource = (key) => {
+    setSource(key);
+    setPage(1);
+    setSearchParams(key !== "boho" ? { src: key } : {});
+  };
+
+  const load = useCallback(async (status, pageNum, src) => {
     setLoading(true);
     setError("");
     try {
       const params = new URLSearchParams({ page: String(pageNum) });
       if (status !== "all") params.set("status", status);
+      if (src) params.set("source", src);
       const { data } = await api.get(`/matches?${params}`);
       setData(data);
     } catch (err) {
@@ -48,15 +78,15 @@ export default function Matches() {
 
   useEffect(() => {
     if (tab === "tv") return;
-    load(tab, page);
-  }, [tab, page, load]);
+    load(tab, page, source);
+  }, [tab, page, source, load]);
 
-  const { matches, pagination, source } = data;
+  const { matches, pagination, source: activeSource } = data;
   const isTv = tab === "tv";
 
   return (
     <div className="w-full">
-      {source === "mock" && !isTv && (
+      {activeSource === "mock" && !isTv && (
         <div className="text-center text-[12px] py-2 px-4 bg-primary/90 text-on-primary font-semibold">
           Preview schedule — full live coverage during matches.
         </div>
@@ -64,10 +94,31 @@ export default function Matches() {
 
       <div className="max-w-[1440px] mx-auto px-5 sm:px-margin-edge pt-md pb-xl w-full">
         <section className="mb-lg">
-          <span className="font-label-caps text-primary tracking-widest opacity-80">MATCH CENTER</span>
-          <h1 className="bebas-headline text-4xl sm:text-display-sm text-on-surface uppercase leading-none mt-1">
-            {isTv ? "World Cup TV" : "Live Global Stage"}
-          </h1>
+          <div className="flex items-center justify-between gap-md flex-wrap">
+            <div>
+              <span className="font-label-caps text-primary tracking-widest opacity-80">MATCH CENTER</span>
+              <h1 className="bebas-headline text-4xl sm:text-display-sm text-on-surface uppercase leading-none mt-1">
+                {isTv ? "World Cup TV" : "Live Global Stage"}
+              </h1>
+            </div>
+
+            {/* Source switcher */}
+            {showSourceToggle && (
+              <div className="flex items-center gap-1 p-1 rounded-full glass-card border border-white/10 shrink-0">
+                {availableSources.map((s) => (
+                  <button
+                    key={s.key}
+                    onClick={() => switchSource(s.key)}
+                    className={`px-4 py-1.5 rounded-full font-label-caps text-[11px] tracking-wider transition-all ${
+                      source === s.key ? "bg-primary text-on-primary" : "text-on-surface-variant hover:text-on-surface"
+                    }`}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
           <div className="flex items-center gap-sm overflow-x-auto no-scrollbar py-md">
             {TABS.map((t) => (
@@ -76,9 +127,7 @@ export default function Matches() {
                 onClick={() => switchTab(t.key)}
                 className={`broadcast-toggle px-lg py-sm rounded-full font-label-caps text-label-caps whitespace-nowrap flex items-center gap-xs ${tab === t.key ? "active" : ""}`}
               >
-                {t.key === "tv" && (
-                  <span className="material-symbols-outlined text-[16px]">live_tv</span>
-                )}
+                {t.key === "tv" && <span className="material-symbols-outlined text-[16px]">live_tv</span>}
                 {t.label}
               </button>
             ))}
@@ -102,7 +151,7 @@ export default function Matches() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-md">
-                {matches.map((m, i) => <MatchCard key={i} match={m} index={i} />)}
+                {matches.map((m, i) => <MatchCard key={i} match={m} index={i} source={activeSource} />)}
               </div>
             )}
 

@@ -6,7 +6,7 @@ function formatTime(ts) {
   return d.toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
 }
 
-export default function MatchCard({ match, index }) {
+export default function MatchCard({ match, index, source }) {
   const navigate = useNavigate();
   const live = match.match_status === "live";
   const finished = match.match_status === "finished";
@@ -18,7 +18,8 @@ export default function MatchCard({ match, index }) {
 
   const open = () => {
     if (!watchable) return;
-    sessionStorage.setItem("wc_match", JSON.stringify(match));
+    // Remember which provider this match came from so Watch refreshes the same one.
+    sessionStorage.setItem("wc_match", JSON.stringify({ ...match, __source: source }));
     navigate(`/watch/${index}`);
   };
 
