@@ -9,11 +9,12 @@ function formatTime(ts) {
 export default function MatchCard({ match, index }) {
   const navigate = useNavigate();
   const live = match.match_status === "live";
+  const finished = match.match_status === "finished";
   const servers = match.servers || [];
   const hasStream = servers.some((s) => s && s.url);
   // Watchable only when the match is live OR a stream is already available
-  // (embeds can appear shortly before kickoff). Future matches stay locked.
-  const watchable = live || hasStream;
+  // (embeds can appear shortly before kickoff). Future/finished matches stay locked.
+  const watchable = (live || hasStream) && !finished;
 
   const open = () => {
     if (!watchable) return;
@@ -38,6 +39,10 @@ export default function MatchCard({ match, index }) {
             <span className="material-symbols-outlined text-[10px] fill-1" style={{ fontVariationSettings: "'FILL' 1" }}>circle</span>
             LIVE
           </div>
+        ) : finished ? (
+          <div className="bg-white/5 text-on-surface-variant/70 px-sm py-1 rounded-full text-[10px] font-bold border border-white/10 uppercase shrink-0">
+            Full Time
+          </div>
         ) : (
           <div className="bg-surface-container-highest/50 text-on-surface-variant px-sm py-1 rounded-full text-[10px] font-bold border border-white/10 uppercase shrink-0">
             Upcoming
@@ -47,10 +52,10 @@ export default function MatchCard({ match, index }) {
 
       {/* Teams + score */}
       <div className="flex justify-between items-center py-md">
-        <Team name={match.home_team_name} logo={match.home_team_logo} dim={!live} />
+        <Team name={match.home_team_name} logo={match.home_team_logo} dim={!live && !finished} />
         <div className="flex flex-col items-center shrink-0 px-2">
-          {live ? (
-            <div className="flex items-center gap-2 sm:gap-sm bebas-headline text-4xl sm:text-display-sm text-primary leading-none" style={{ filter: "drop-shadow(0 0 20px rgba(245,200,66,0.4))" }}>
+          {live || finished ? (
+            <div className={`flex items-center gap-2 sm:gap-sm bebas-headline text-4xl sm:text-display-sm leading-none ${live ? "text-primary" : "text-on-surface/70"}`} style={live ? { filter: "drop-shadow(0 0 20px rgba(245,200,66,0.4))" } : undefined}>
               <span>{match.homeTeamScore || 0}</span>
               <span className="text-on-surface-variant opacity-20 text-2xl sm:text-headline-lg-mobile">:</span>
               <span>{match.awayTeamScore || 0}</span>
@@ -58,9 +63,9 @@ export default function MatchCard({ match, index }) {
           ) : (
             <span className="bebas-headline text-4xl sm:text-display-sm text-on-surface-variant opacity-10 leading-none">VS</span>
           )}
-          <span className="font-label-caps text-primary/80 text-[12px] mt-xs">{formatTime(match.match_time)}</span>
+          <span className="font-label-caps text-primary/80 text-[12px] mt-xs">{finished ? "FULL TIME" : formatTime(match.match_time)}</span>
         </div>
-        <Team name={match.away_team_name} logo={match.away_team_logo} dim={!live} />
+        <Team name={match.away_team_name} logo={match.away_team_logo} dim={!live && !finished} />
       </div>
 
       {/* Footer */}
@@ -78,6 +83,17 @@ export default function MatchCard({ match, index }) {
               <span className="material-symbols-outlined fill-1" style={{ fontVariationSettings: "'FILL' 1" }}>play_arrow</span>
               WATCH
             </button>
+          </>
+        ) : finished ? (
+          <>
+            <div className="flex items-center gap-xs text-on-surface-variant/70 font-label-caps text-[10px]">
+              <span className="material-symbols-outlined text-sm">sports_score</span>
+              <span>MATCH ENDED</span>
+            </div>
+            <span className="bg-white/5 text-on-surface-variant/50 px-lg py-sm rounded-full font-label-caps text-label-caps flex items-center gap-xs border border-white/10 select-none">
+              <span className="material-symbols-outlined text-[18px]">flag</span>
+              FULL TIME
+            </span>
           </>
         ) : (
           <>

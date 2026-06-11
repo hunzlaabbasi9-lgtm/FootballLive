@@ -54,6 +54,7 @@ function teamsMatch(a, b) {
 
 export function normalizeBohoMatch(m, league = {}, sources = []) {
   const live = m.status === "inprogress";
+  const finished = m.status === "finished" || m.status === "ended" || m.status === "ft";
   const servers =
     sources.length > 0
       ? sources.map((s) => ({
@@ -72,7 +73,7 @@ export function normalizeBohoMatch(m, league = {}, sources = []) {
     away_team_logo: m.teams?.away?.badge || "",
     league_name: league.name || m.league?.name || "",
     league_logo: league.logo || m.league?.logo || "",
-    match_status: live ? "live" : "vs",
+    match_status: live ? "live" : finished ? "finished" : "vs",
     homeTeamScore: m.score?.current?.home ?? 0,
     awayTeamScore: m.score?.current?.away ?? 0,
     match_time: Math.floor((m.timestamp || 0) / 1000),
