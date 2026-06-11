@@ -99,7 +99,7 @@ export default function Paywall() {
 
         <div className="mt-lg pt-lg border-t border-white/5 text-center">
           <p className="font-label-caps text-[10px] tracking-widest text-on-surface-variant opacity-60 uppercase">
-            {cfg.cryptoEnabled ? "🔒 Paid in USDT (TRC-20) · on-chain & irreversible" : "⚙️ Demo mode — no real charge"}
+            {cfg.cryptoEnabled ? "🔒 Paid in USDT (BSC / BEP-20) · on-chain & irreversible" : "⚙️ Demo mode — no real charge"}
           </p>
         </div>
       </div>
