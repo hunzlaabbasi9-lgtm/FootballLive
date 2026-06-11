@@ -36,49 +36,45 @@ router.get("/matches", requireAuth, requirePaid, async (req, res) => {
   const pageNum = parseInt(page, 10) || 1;
   const tabStatus = status === "all" ? undefined : status;
 
+  // 1) BOHO (primary).
   if (bohoConfigured()) {
     try {
       const data = await getBohoMatches({ status: tabStatus, page: pageNum, date: date || null });
       return res.json({ source: "boho", ...data });
     } catch (err) {
-      console.error("BOHO matches error:", err.message);
-      return res.json({
-        ...getMockMatches({ status: tabStatus, page: pageNum }),
-        upstreamError: "boho_failed",
-      });
+      console.error("BOHO matches error (falling back):", err.message);
+      // fall through to 1xapi / mock
     }
   }
 
-  if (!RAPIDAPI_KEY) {
-    return res.json(getMockMatches({ status: tabStatus, page: pageNum }));
+  // 2) 1xapi (fallback when BOHO is unset or failed).
+  if (RAPIDAPI_KEY) {
+    try {
+      const data = await fetch1xapiMatches({ status: tabStatus, page: pageNum, league, type, date });
+      return res.json({ source: "live", ...data });
+    } catch (err) {
+      console.error("1xapi matches error (falling back):", err.message);
+      // fall through to mock
+    }
   }
 
-  try {
-    const data = await fetch1xapiMatches({
-      status: tabStatus,
-      page: pageNum,
-      league,
-      type,
-      date,
-    });
-    res.json({ source: "live", ...data });
-  } catch (err) {
-    console.error("1xapi matches error:", err.message);
-    res.json({
-      ...getMockMatches({ status: tabStatus, page: pageNum }),
-      upstreamError: "fetch_failed",
-    });
-  }
+  // 3) Mock (last resort, or when no keys are configured).
+  const anyConfigured = bohoConfigured() || Boolean(RAPIDAPI_KEY);
+  return res.json({
+    ...getMockMatches({ status: tabStatus, page: pageNum }),
+    ...(anyConfigured ? { upstreamError: "all_sources_failed" } : {}),
+  });
 });
 
 // Fresh embed URLs for Watch (BOHO) or stream servers (1xapi).
 router.get("/matches/refresh", requireAuth, requirePaid, async (req, res) => {
   const { home, away, status, boho_id: bohoId } = req.query;
 
-  if (bohoConfigured()) {
-    if (!bohoId && (!home || !away)) {
-      return res.status(400).json({ error: "boho_id or home and away team names required" });
-    }
+  const find = (list) =>
+    (list || []).find((m) => m.home_team_name === home && m.away_team_name === away);
+
+  // 1) BOHO (primary).
+  if (bohoConfigured() && (bohoId || (home && away))) {
     try {
       const match = await findBohoMatch({
         bohoId: bohoId || null,
@@ -88,45 +84,44 @@ router.get("/matches/refresh", requireAuth, requirePaid, async (req, res) => {
       });
       return res.json({ source: "boho", match, probedAt: Date.now() });
     } catch (err) {
-      console.error("BOHO refresh error:", err.message);
-      return res.status(502).json({ error: "Could not refresh match stream" });
+      console.error("BOHO refresh error (falling back):", err.message);
+      // fall through to 1xapi / mock
     }
   }
 
-  if (!home || !away) {
-    return res.status(400).json({ error: "home and away team names required" });
-  }
-
-  if (!RAPIDAPI_KEY) {
-    const mock = getMockMatches({ status: status || "live", page: 1 });
-    const match = mock.matches.find(
-      (m) => m.home_team_name === home && m.away_team_name === away
-    );
-    return res.json({ source: "mock", match: match || null });
-  }
-
-  const find = (list) =>
-    list.find((m) => m.home_team_name === home && m.away_team_name === away);
-
-  try {
-    for (let page = 1; page <= 3; page++) {
-      const data = await fetch1xapiMatches({ status, page });
-      const hit = find(data.matches || []);
-      if (hit) {
-        const servers = await rankServers(hit.servers || []);
-        return res.json({
-          source: "live",
-          match: { ...hit, servers },
-          probedAt: Date.now(),
-        });
+  // 2) 1xapi (fallback) — needs team names.
+  if (RAPIDAPI_KEY && home && away) {
+    try {
+      for (let page = 1; page <= 3; page++) {
+        const data = await fetch1xapiMatches({ status, page });
+        const hit = find(data.matches);
+        if (hit) {
+          const servers = await rankServers(hit.servers || []);
+          return res.json({ source: "live", match: { ...hit, servers }, probedAt: Date.now() });
+        }
+        if (!data.pagination?.hasNext) break;
       }
-      if (!data.pagination?.hasNext) break;
+      return res.json({ source: "live", match: null });
+    } catch (err) {
+      console.error("1xapi refresh error (falling back):", err.message);
+      // fall through to mock / error
     }
-    res.json({ source: "live", match: null });
-  } catch (err) {
-    console.error("Refresh failed:", err.message);
-    res.status(502).json({ error: "Could not refresh match streams" });
   }
+
+  // 3) Mock (no keys configured).
+  if (!bohoConfigured() && !RAPIDAPI_KEY) {
+    if (!home || !away) {
+      return res.status(400).json({ error: "home and away team names required" });
+    }
+    const mock = getMockMatches({ status: status || "live", page: 1 });
+    return res.json({ source: "mock", match: find(mock.matches) || null });
+  }
+
+  // A source is configured but every attempt failed.
+  if (!bohoId && (!home || !away)) {
+    return res.status(400).json({ error: "boho_id or home and away team names required" });
+  }
+  return res.status(502).json({ error: "Could not refresh match stream" });
 });
 
 export default router;

@@ -10,8 +10,13 @@ export default function MatchCard({ match, index }) {
   const navigate = useNavigate();
   const live = match.match_status === "live";
   const servers = match.servers || [];
+  const hasStream = servers.some((s) => s && s.url);
+  // Watchable only when the match is live OR a stream is already available
+  // (embeds can appear shortly before kickoff). Future matches stay locked.
+  const watchable = live || hasStream;
 
   const open = () => {
+    if (!watchable) return;
     sessionStorage.setItem("wc_match", JSON.stringify(match));
     navigate(`/watch/${index}`);
   };
@@ -60,17 +65,32 @@ export default function MatchCard({ match, index }) {
 
       {/* Footer */}
       <div className="flex justify-between items-center mt-auto pt-md border-t border-white/5">
-        <div className="flex items-center gap-xs text-on-surface-variant font-label-caps text-[10px]">
-          <span className="material-symbols-outlined text-sm text-secondary">sensors</span>
-          <span>{servers.length} BROADCAST{servers.length !== 1 ? "S" : ""}</span>
-        </div>
-        <button
-          onClick={open}
-          className="bg-secondary text-on-secondary px-lg py-sm rounded-full font-label-caps text-label-caps flex items-center gap-xs hover:brightness-110 active:scale-95 transition-all emerald-glow"
-        >
-          <span className="material-symbols-outlined fill-1" style={{ fontVariationSettings: "'FILL' 1" }}>play_arrow</span>
-          WATCH
-        </button>
+        {watchable ? (
+          <>
+            <div className="flex items-center gap-xs text-on-surface-variant font-label-caps text-[10px]">
+              <span className="material-symbols-outlined text-sm text-secondary">sensors</span>
+              <span>{servers.length} BROADCAST{servers.length !== 1 ? "S" : ""}</span>
+            </div>
+            <button
+              onClick={open}
+              className="bg-secondary text-on-secondary px-lg py-sm rounded-full font-label-caps text-label-caps flex items-center gap-xs hover:brightness-110 active:scale-95 transition-all emerald-glow"
+            >
+              <span className="material-symbols-outlined fill-1" style={{ fontVariationSettings: "'FILL' 1" }}>play_arrow</span>
+              WATCH
+            </button>
+          </>
+        ) : (
+          <>
+            <div className="flex items-center gap-xs text-on-surface-variant/70 font-label-caps text-[10px]">
+              <span className="material-symbols-outlined text-sm">schedule</span>
+              <span>KICKOFF {formatTime(match.match_time)}</span>
+            </div>
+            <span className="bg-white/5 text-on-surface-variant/60 px-lg py-sm rounded-full font-label-caps text-label-caps flex items-center gap-xs border border-white/10 cursor-not-allowed select-none">
+              <span className="material-symbols-outlined text-[18px]">lock_clock</span>
+              UPCOMING
+            </span>
+          </>
+        )}
       </div>
     </div>
   );
