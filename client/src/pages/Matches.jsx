@@ -12,9 +12,13 @@ const TABS = [
 ];
 
 const SOURCES = [
-  { key: "boho", label: "SportSRC", flag: "boho" },
-  { key: "1xapi", label: "1xAPI", flag: "oneXapi" },
+  { key: "boho", label: "Source 1", flag: "boho" },
+  { key: "1xapi", label: "Source 2", flag: "oneXapi" },
 ];
+
+// Generic URL aliases so provider names never appear in the address bar.
+const SRC_ALIAS = { boho: "1", "1xapi": "2" };
+const SRC_FROM_ALIAS = { 1: "boho", 2: "1xapi" };
 
 export default function Matches() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -27,7 +31,7 @@ export default function Matches() {
 
   // Which providers are configured + which one is selected.
   const [avail, setAvail] = useState({ boho: false, oneXapi: false });
-  const [source, setSource] = useState(searchParams.get("src") || "boho");
+  const [source, setSource] = useState(SRC_FROM_ALIAS[searchParams.get("src")] || "boho");
 
   // Discover available sources once.
   useEffect(() => {
@@ -50,13 +54,13 @@ export default function Matches() {
   const switchTab = (key) => {
     setTab(key);
     setPage(1);
-    setSearchParams(key === "tv" ? { tab: "tv" } : source !== "boho" ? { src: source } : {});
+    setSearchParams(key === "tv" ? { tab: "tv" } : source !== "boho" ? { src: SRC_ALIAS[source] } : {});
   };
 
   const switchSource = (key) => {
     setSource(key);
     setPage(1);
-    setSearchParams(key !== "boho" ? { src: key } : {});
+    setSearchParams(key !== "boho" ? { src: SRC_ALIAS[key] } : {});
   };
 
   const load = useCallback(async (status, pageNum, src) => {
