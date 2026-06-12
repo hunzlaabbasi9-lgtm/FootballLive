@@ -1,3 +1,5 @@
+import { resolveBohoSources } from "./embedResolve.js";
+
 const BOHO_HOST = process.env.BOHO_RAPIDAPI_HOST || "football-streaming-api-match-data.p.rapidapi.com";
 const BOHO_KEY = process.env.BOHO_RAPIDAPI_KEY || "";
 const BOHO_BASE = `https://${BOHO_HOST}`;
@@ -52,17 +54,12 @@ function teamsMatch(a, b) {
   return x === y || x.includes(y) || y.includes(x);
 }
 
-export function normalizeBohoMatch(m, league = {}, sources = []) {
+export function normalizeBohoMatch(m, league = {}, servers = []) {
   const live = m.status === "inprogress";
   const finished = m.status === "finished" || m.status === "ended" || m.status === "ft";
-  const servers =
-    sources.length > 0
-      ? sources.map((s) => ({
-          name: `Stream ${s.streamNo}${s.hd ? " HD" : ""}`,
-          type: "embed",
-          url: s.embedUrl,
-          language: s.language || null,
-        }))
+  const matchServers =
+    servers.length > 0
+      ? servers
       : [{ name: "Live Match Feed", type: "embed", url: null }];
 
   return {
@@ -78,7 +75,7 @@ export function normalizeBohoMatch(m, league = {}, sources = []) {
     awayTeamScore: m.score?.current?.away ?? 0,
     match_time: Math.floor((m.timestamp || 0) / 1000),
     status_detail: m.status_detail || null,
-    servers,
+    servers: matchServers,
   };
 }
 
@@ -122,8 +119,9 @@ export async function getBohoDetail(matchId) {
   if (!info) return null;
 
   const league = info.league || {};
+  const servers = await resolveBohoSources(sources);
   return {
-    ...normalizeBohoMatch(info, league, sources),
+    ...normalizeBohoMatch(info, league, servers),
     venue: payload?.data?.info?.venue || null,
     referee: payload?.data?.info?.referee || null,
   };

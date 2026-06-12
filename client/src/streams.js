@@ -45,7 +45,7 @@ function needsProxy(server, manifestUrl) {
   // RapidAPI match feeds (incl. signed cdnfaster direct URLs) must not hit the CDN from the browser.
   if (MATCH_TYPES.has(server?.type)) return true;
   if (SIGNED_CDN.test(manifestUrl)) return true;
-  if (/cdnfaster|niues\.live|camel4|sla\.homes/i.test(manifestUrl)) return true;
+  if (/cdnfaster|niues\.live|camel4|sla\.homes|rapid\.streamapi\.cc/i.test(manifestUrl)) return true;
   if (header.referer || header["user-agent"]) return true;
   // BBC Akamai HLS blocks browser XHR (no CORS) — must proxy server-side.
   if (/akamaized\.net/i.test(manifestUrl) && /bbc|pips/i.test(manifestUrl)) return true;
