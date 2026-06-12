@@ -15,7 +15,7 @@ export function buildUpstreamHeaders(targetUrl, { ua, referer, origin } = {}) {
   };
 
   let effectiveReferer = referer;
-  if (!effectiveReferer && /cdnfaster|niues\.live/i.test(targetUrl)) {
+  if (!effectiveReferer && /cdnfaster|niues\.live|embedsport\.live/i.test(targetUrl)) {
     try {
       effectiveReferer = new URL(targetUrl).origin + "/";
     } catch {
